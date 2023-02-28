@@ -1,6 +1,4 @@
 parser view
-
-
 interface GigabitEthernet0/0/0
 
 
@@ -8,7 +6,9 @@ interface GigabitEthernet0/0/0
 
 interface GigabitEthernet0/0/1
 
- shutdown
+
+shutdown
+
 !
 
 interface Serial0/1/0

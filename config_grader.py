@@ -1,5 +1,6 @@
 import json
 import re
+import config_grader
 
 def grade_configuration(config_file, criteria_file):
     # Load the criteria from the criteria file
@@ -11,13 +12,29 @@ def grade_configuration(config_file, criteria_file):
         config = f.read()
 
     # Grade the configuration based on the criteria
-    # 10 marks for device erasure. -10 allocated in criteria.json file i parser view still in config file
-    #total_weight = 10.0
-    score = 10.0
-    
+    total_weight = sum(c['weight'] for c in criteria_dict.values())
+    score = 0
+
     matched_criteria = set()  # keep track of matched criteria
 
+    # Check for shutdown command under G0/0/0
+    matches_g0_0_0 = re.search(r"interface GigabitEthernet0/0/0(?:\s+.*)*\s+shutdown\s+!", config, flags=re.DOTALL)
+    if matches_g0_0_0:
+        score += criteria_dict['has_shutdown_on_GigabitEthernet0/0/0']['weight']
+        matched_criteria.add('has_shutdown_on_GigabitEthernet0/0/0')
+        print("Shutdown command found under GigabitEthernet0/0/0")
+
+    # Check for shutdown command under G0/0/1
+    matches_g0_0_1 = re.search(r"interface GigabitEthernet0/0/1(?:\s+.*)*\s+shutdown\s+!", config, flags=re.DOTALL)
+    if matches_g0_0_1:
+        score += criteria_dict['has_shutdown_on_GigabitEthernet0/0/1']['weight']
+        matched_criteria.add('has_shutdown_on_GigabitEthernet0/0/1')
+        print("Shutdown command found under GigabitEthernet0/0/1")
+
     for criterion, criteria_details in criteria_dict.items():
+        if criterion in matched_criteria:
+            continue  # already matched this criterion
+
         answer = criteria_details['answer']
         weight = criteria_details['weight']
         is_regex = criteria_details.get('regex', False)
@@ -33,27 +50,5 @@ def grade_configuration(config_file, criteria_file):
                 matched_criteria.add(criterion)  # add matched criterion to set
 
     # Calculate the percentage grade
-    grade = score
+    grade = (score / total_weight) * 100
     return grade, matched_criteria  # return set of matched criteria
-
-def get_matched_criteria(config, criteria_dict):
-    # Find which criteria match the configuration
-    matched_criteria = set()
-
-    for criterion, criteria_details in criteria_dict.items():
-        answer = criteria_details['answer']
-        is_regex = criteria_details.get('regex', False)
-        if is_regex:
-            matches = re.search(answer, config, flags=re.DOTALL)
-            if matches:
-                matched_criteria.add(criterion)
-        else:
-            if answer in config:
-                matched_criteria.add(criterion)
-
-    return matched_criteria
-             
-    # Calculate the percentage grade
-    grade = score
-
-    return grade
