@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QGridLayout
-from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ShowDetailsLogic, ResetLogic, QuitLogic
+from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ShowDetailsLogic, ResetLogic, QuitLogic,ViewDetailsLogic
 from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
 from PyQt5.QtCore import Qt
 
@@ -10,9 +10,12 @@ class ExamGraderGUI(QWidget):
         self.setGeometry(100, 100, 800,0)
         # Load the icon from a file
         app_icon = QIcon('SpindleyLogo.png')
-
         # Set the application icon
         QApplication.setWindowIcon(app_icon)
+
+        # Define the exam grader attributes
+        self.criteria = {}
+        self.exam_grader = None
 
         # Create the browse folder button and label
         self.browse_folder_button = QPushButton('Select Folder', self)
@@ -48,26 +51,21 @@ class ExamGraderGUI(QWidget):
         self.reset_button = QPushButton('Reset', self)
         self.quit_button = QPushButton('Quit', self)
 
-        # Define the exam grader attributes
-        self.criteria = {}
-        self.exam_grader = None
-
         # Create the button logic instances
         self.browse_folder_logic = FilesToCheckButtonLogic(self.folder_path_label)
         self.browse_file_logic = CriteriaFileButtonLogic(self.criteria_file_label)
+        self.grade_exam_logic = GradeExamLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
+        self.details_button_logic = ViewDetailsLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
         self.reset_logic = ResetLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
         self.quit_logic = QuitLogic()
-        self.grade_exam_logic = GradeExamLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
-        self.show_details_logic = ShowDetailsLogic(self.get_criteria, self.get_exam_grader)
-     
-
+    
         #Connect the button signals to their slots
         self.browse_folder_button.clicked.connect(self.browse_folder_logic.run)
         self.browse_file_button.clicked.connect(self.browse_file_logic.run)
+        self.grade_exam_button.clicked.connect(self.grade_exam_logic.run)
+        self.show_details_button.clicked.connect(self.details_button_logic.run)
         self.reset_button.clicked.connect(self.reset_logic.run)
         self.quit_button.clicked.connect(self.quit_logic.run)
-        self.grade_exam_button.clicked.connect(self.grade_exam_logic.run)
-        self.show_details_button.clicked.connect(self.show_details_logic.run)
 
         # Create the layouts
         button_layout1 = QHBoxLayout()
@@ -93,24 +91,6 @@ class ExamGraderGUI(QWidget):
 
         self.setLayout(main_layout)
         self.show()
-
-    def update_folder_path_label(self, folder_path):
-        if folder_path:
-            # Show the last two folders of the selected folder path
-            folder_path_display = "/".join(folder_path.split("/")[0:])
-            self.folder_path_label.setText(f"Selected Folder: {folder_path_display}")
-
-    def update_criteria_file_label(self, file_path):
-        if file_path:
-            # Show the last two folders and the file name of the selected file path
-            criteria_file_display = "/".join(file_path.split("/")[-3:])
-            self.criteria_file_label.setText(f"Selected Criteria File: {criteria_file_display}")
-    
-    def get_criteria(self):
-        return self.criteria
-
-    def get_exam_grader(self):
-        return self.exam_grader
 
 if __name__ == '__main__':
     import sys
