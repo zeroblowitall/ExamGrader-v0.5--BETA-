@@ -51,6 +51,4 @@ class ExamGrader:
 
     def get_results_dict(self):
         return self.results_dict
-        
-        # Print the total score
-        print(f'Total Score: {self.total_score}')
+

@@ -1,4 +1,6 @@
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout
+from PyQt5.QtGui import QColor
+from PyQt5.QtCore import QSize
 from grader_logic import ExamGrader
 import json, os
 
@@ -110,7 +112,7 @@ class ViewDetailsLogic:
 class ShowDetailsLogic:
     def __init__(self, exam_grader):
         print('ShowDetailsButton logic instantiated')
-        self.results_dict = exam_grader
+        self.results_dict = exam_grader.get_results_dict()
 
     def run(self):
         print('ShowDetailsButton clicked')
@@ -121,19 +123,57 @@ class ShowDetailsLogic:
 
             # Create a table to display the exam details
             table = QTableWidget()
-            table.setColumnCount(2)
-            table.setHorizontalHeaderLabels(['Question', 'Score'])
+            table.setColumnCount(5)
+            table.setHorizontalHeaderLabels(['Question', 'Answer', 'Weight', 'Result', 'Score'])
 
             # Add the exam details to the table
-            for i, (question, score) in enumerate(self.results_dict.criteria.items()):
+            rows = []
+            for exam_file, results in self.results_dict.items():
+                for key, value in results.items():
+                    question = f"{exam_file}: {key}"
+                    answer = value['answer']
+                    weight = value['weight']
+                    points = value['points']
+                    result = 'Correct' if points > 0 else 'Incorrect'
+                    score = weight if points > 0 else 0
+                    rows.append((question, answer, weight, result, score))
+
+            for i, row in enumerate(rows):
                 table.insertRow(i)
-                table.setItem(i, 0, QTableWidgetItem(question))
-                table.setItem(i, 1, QTableWidgetItem(str(score)))
+                for j, item in enumerate(row):
+                    table.setItem(i, j, QTableWidgetItem(str(item)))
+
+                    # Set the background color of the result column
+                    if j == 3:
+                        if item == 'Correct':
+                            table.item(i, j).setBackground(QColor('green'))
+                        else:
+                            table.item(i, j).setBackground(QColor('red'))
+
+            # Resize the columns to fit the contents
+            table.resizeColumnsToContents()
+
+            # Calculate the width of each column
+            column_widths = [table.columnWidth(i) for i in range(table.columnCount())]
+            # Calculate the total width of the table
+            table_width = sum(column_widths)
+
+            print('Table width:', table_width)
 
             # Create a layout for the table and add it to the window
             layout = QVBoxLayout()
             layout.addWidget(table)
             table_window.setLayout(layout)
+
+            # Set the minimum size of the window
+            min_size = QSize(table_width, 600)
+            table_window.setMinimumSize(min_size)
+
+            # Position the window to the right of the main window
+            main_window = QApplication.activeWindow()
+            main_window_pos = main_window.pos()
+            main_window_size = main_window.size()
+            table_window.move(main_window_pos.x() + main_window_size.width(), main_window_pos.y())
 
             # Show the window
             table_window.exec_()
