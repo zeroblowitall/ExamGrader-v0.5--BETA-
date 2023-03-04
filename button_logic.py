@@ -123,20 +123,20 @@ class ShowDetailsLogic:
 
             # Create a table to display the exam details
             table = QTableWidget()
-            table.setColumnCount(5)
-            table.setHorizontalHeaderLabels(['Question', 'Answer', 'Weight', 'Result', 'Score'])
+            table.setColumnCount(4)
+            table.setHorizontalHeaderLabels(['Question', 'Answer', 'Result', 'Score'])
 
             # Add the exam details to the table
             rows = []
             for exam_file, results in self.results_dict.items():
                 for key, value in results.items():
-                    question = f"{exam_file}: {key}"
+                    question = f"{key}"
                     answer = value['answer']
                     weight = value['weight']
                     points = value['points']
                     result = 'Correct' if points > 0 else 'Incorrect'
                     score = weight if points > 0 else 0
-                    rows.append((question, answer, weight, result, score))
+                    rows.append((question, answer, result, score))
 
             for i, row in enumerate(rows):
                 table.insertRow(i)
@@ -144,7 +144,7 @@ class ShowDetailsLogic:
                     table.setItem(i, j, QTableWidgetItem(str(item)))
 
                     # Set the background color of the result column
-                    if j == 3:
+                    if j == 2:
                         if item == 'Correct':
                             table.item(i, j).setBackground(QColor('green'))
                         else:
@@ -157,8 +157,6 @@ class ShowDetailsLogic:
             column_widths = [table.columnWidth(i) for i in range(table.columnCount())]
             # Calculate the total width of the table
             table_width = sum(column_widths)
-
-            print('Table width:', table_width)
 
             # Create a layout for the table and add it to the window
             layout = QVBoxLayout()

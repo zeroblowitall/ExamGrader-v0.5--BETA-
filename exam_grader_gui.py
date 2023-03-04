@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QGridLayout
-from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ShowDetailsLogic, ResetLogic, QuitLogic,ViewDetailsLogic
+from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ResetLogic, QuitLogic,ViewDetailsLogic
 from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
 from PyQt5.QtCore import Qt
 

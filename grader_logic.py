@@ -32,16 +32,6 @@ class ExamGrader:
                         self.total_score += self.criteria[key]['weight']
                     else:
                         self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': 0}
-                elif key == "IPv4 address":
-                    # Check the IP address based on the file being graded
-                    if exam_file == 'R1config.txt' and self.criteria[key]['answer'].lower() in exam_file_contents.lower():
-                        self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': self.criteria[key]['weight']}
-                        self.total_score += self.criteria[key]['weight']
-                    elif exam_file == 'S1config.txt' and self.criteria[key]['answer2'].lower() in exam_file_contents.lower():
-                        self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer2'], 'weight': self.criteria[key]['weight'], 'points': self.criteria[key]['weight']}
-                        self.total_score += self.criteria[key]['weight']
-                    else:
-                        self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': 0}
                 else:
                     if self.criteria[key]['answer'].lower() in exam_file_contents.lower():
                         self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': self.criteria[key]['weight']}
@@ -51,4 +41,3 @@ class ExamGrader:
 
     def get_results_dict(self):
         return self.results_dict
-
