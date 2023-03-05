@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import QSize
 from grader_logic import ExamGrader
-import json, os
+from datetime import datetime
+import json, os, csv
 
 class ButtonLogic:
     def __init__(self, label):
@@ -124,19 +125,32 @@ class ShowDetailsLogic:
             # Create a table to display the exam details
             table = QTableWidget()
             table.setColumnCount(4)
-            table.setHorizontalHeaderLabels(['Question', 'Answer', 'Result', 'Score'])
+            table.setHorizontalHeaderLabels(['Device', 'Question', 'Answer', 'Result', 'Score'])
 
             # Add the exam details to the table
             rows = []
             for exam_file, results in self.results_dict.items():
-                for key, value in results.items():
-                    question = f"{key}"
-                    answer = value['answer']
-                    weight = value['weight']
-                    points = value['points']
-                    result = 'Correct' if points > 0 else 'Incorrect'
-                    score = weight if points > 0 else 0
-                    rows.append((question, answer, result, score))
+                device = exam_file.split('.')[0]
+                if exam_file == "R1config.txt":
+                    for key, value in results.items():
+                        if "R1" in key:
+                            question = f"{key}"
+                            answer = value['answer']
+                            weight = value['weight']
+                            points = value['points']
+                            result = 'Correct' if points > 0 else 'Incorrect'
+                            score = weight if points > 0 else 0
+                            rows.append((question, answer, result, score))
+                elif exam_file == "S1config.txt":
+                    for key, value in results.items():
+                        if "S1" in key:
+                            question = f"{key}"
+                            answer = value['answer']
+                            weight = value['weight']
+                            points = value['points']
+                            result = 'Correct' if points > 0 else 'Incorrect'
+                            score = weight if points > 0 else 0
+                            rows.append((question, answer, result, score))
 
             for i, row in enumerate(rows):
                 table.insertRow(i)
@@ -163,6 +177,20 @@ class ShowDetailsLogic:
             layout.addWidget(table)
             table_window.setLayout(layout)
 
+            # Create a button box to hold the Close and Save buttons
+            button_box = QHBoxLayout()
+            close_button = QPushButton('Close')
+            save_button = QPushButton('Save')
+            button_box.addWidget(close_button)
+            button_box.addWidget(save_button)
+            layout.addLayout(button_box)
+
+            # Connect the Close button to the table window's close method
+            close_button.clicked.connect(table_window.close)
+
+            # Connect the Save button to a function that saves the results to a CSV file
+            save_button.clicked.connect(lambda: self.save_to_csv(rows))
+
             # Set the minimum size of the window
             min_size = QSize(table_width, 600)
             table_window.setMinimumSize(min_size)
@@ -177,6 +205,23 @@ class ShowDetailsLogic:
             table_window.exec_()
         else:
             print('ExamGrader instance not found.')
+
+    def save_to_csv(self, rows):
+        # Get the current timestamp for the filename
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+        # Create the filename for the CSV file
+        filename = f"exam_results_{timestamp}.csv"
+
+        # Write the exam results to the CSV file
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Question', 'Answer', 'Result', 'Score'])
+            for row in rows:
+                writer.writerow(row)
+        
+        # Show a message box to confirm that the results were saved
+        QMessageBox.information(None, 'Save Results', f'The exam results have been saved to "{filename}".')
 
 class ResetLogic:
     def __init__(self, folder_label, criteria_label, score_label):

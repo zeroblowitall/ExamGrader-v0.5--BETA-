@@ -25,29 +25,30 @@ class ExamGrader:
 
             print(f'Grading {exam_file}...')
             self.results_dict[exam_file] = {}
-
-            # Check if this is an R1 or S1 file
-            r_or_s = ''
-            if exam_file.startswith('R1'):
-                r_or_s = 'R1'
-            elif exam_file.startswith('S1'):
-                r_or_s = 'S1'
-
+            found_strings = set()
             for key in self.criteria.keys():
-                # Only grade against the criteria that belong to this file
-                if key.endswith(r_or_s) or not key.endswith('config.txt'):
-                    if self.criteria[key]['regex']:
-                        if re.search(self.criteria[key]['answer'], exam_file_contents, re.IGNORECASE):
+                if self.criteria[key]['device'] not in exam_file:
+                    continue
+                if self.criteria[key]['regex']:
+                    if re.search(self.criteria[key]['answer'], exam_file_contents, re.IGNORECASE):
+                        if key not in found_strings:
                             self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': self.criteria[key]['weight']}
                             self.total_score += self.criteria[key]['weight']
+                            found_strings.add(key)
                         else:
                             self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': 0}
                     else:
-                        if self.criteria[key]['answer'].lower() in exam_file_contents.lower():
+                        self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': 0}
+                else:
+                    if self.criteria[key]['answer'].lower() in exam_file_contents.lower():
+                        if key not in found_strings:
                             self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': self.criteria[key]['weight']}
                             self.total_score += self.criteria[key]['weight']
+                            found_strings.add(key)
                         else:
                             self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': 0}
+                    else:
+                        self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': 0}
 
     def get_results_dict(self):
         return self.results_dict
