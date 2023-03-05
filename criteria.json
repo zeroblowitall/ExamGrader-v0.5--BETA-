@@ -1,16 +1,12 @@
 {
-    "hostname": {"answer": "hostname R1", "weight": 1.0,"regex": false},
-    "no_ip_domain_look": {"answer": "no ip domain lookup", "weight": 1.0,"regex": false},
-    "IPv4": {"answer": "192.168.1.1","weight": 1.0,"regex": false},
-    "ipv6_unicast_routing": {"answer": "ipv6 unicast-routing", "weight": 1.0,"regex": false},
-    "R1config.txt_description_on_GigabitEthernet0/0/0": {"answer": " description ", "weight": 1.0, "regex": true},
-    "R1config.txt_ipv4_address_on_GigabitEthernet0/0/0": {"answer": " ip address 192.168.10.129 255.255.255.192", "weight": 1.0, "regex": true},
-    "R1config.txt_shutdown_on_GigabitEthernet0/0/0": {"answer": "interface GigabitEthernet0/0/0(?:\\s+.*)*\\s+shutdown\\s+!", "weight": 1.0, "regex": true},
-    "S1config.txt_hostname": {"answer": "hostname S1", "weight": 1.0,"regex": false},
-    "S1config.txt_no_ip_domain_look": {"answer": "no ip domain lookup", "weight": 1.0,"regex": false},
-    "S1config.txt_IPv4": {"answer": "192.168.1.1","weight": 1.0,"regex": false},
-    "S1config.txt_ipv6_unicast_routing": {"answer": "ipv6 unicast-routing", "weight": 1.0,"regex": false},
-    "S1config.txt_description_on_GigabitEthernet0/0/0": {"answer": " description ", "weight": 1.0, "regex": true},
-    "S1config.txt_ipv4_address_on_GigabitEthernet0/0/0": {"answer": " ip address 192.168.10.129 255.255.255.192", "weight": 1.0, "regex": true},
-    "S1config.txt_shutdown_on_GigabitEthernet0/0/0": {"answer": "interface GigabitEthernet0/0/0(?:\\s+.*)*\\s+shutdown\\s+!", "weight": 1.0, "regex": true}
+    "hostname_R1": {"answer": "hostname R1", "weight": 1.0,"regex": false, "device": "R1"},
+    "hostname_S1": {"answer": "hostname S1", "weight": 1.0,"regex": false, "device": "S1"},
+    "no_ip_domain_look": {"answer": "no ip domain lookup", "weight": 1.0,"regex": false, "device": "both"},
+    "enable_secret": {"answer": "enable secret ", "weight": 1.0,"regex": false, "device": "both"},
+    "ipv6_unicast_routing": {"answer": "ipv6 unicast-routing", "weight": 1.0,"regex": false, "device": "both"},
+    "password_encryption": {"answer": "service password-encryption ", "weight": 1.0, "regex": false, "device": "both"},
+    "G0/0/0_description_R1": {"answer": " description ", "weight": 1.0, "regex": true, "device": "R1"},
+    "G0/0/0_IPv4_R1": {"answer": "ip address 192.168.1.1","weight": 1.0,"regex": false, "device": "R1"},
+       
+    "IPv4_S1": {"answer": "ip address 192.168.1.2","weight": 1.0,"regex": false, "device": "S1"}
 }
