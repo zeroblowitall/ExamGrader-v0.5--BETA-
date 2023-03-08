@@ -1,9 +1,12 @@
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIcon
 from PyQt5.QtCore import QSize
 from grader_logic import ExamGrader
 from datetime import datetime
-import json, os, csv
+import json, os, csv, sys
+
+app = QApplication(sys.argv)
+app.setWindowIcon(QIcon('images/icon1.png'))
 
 class ButtonLogic:
     def __init__(self, label):
@@ -38,14 +41,12 @@ class CriteriaFileButtonLogic(ButtonLogic):
 
 class GradeExamLogic:
     def __init__(self, folder_label, criteria_label, score_label):
-        print('GradeExamButton logic instantiated')
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
         self.exam_grader = None
 
     def run(self):
-        print('GradeExamButton clicked')
         folder_path = self.folder_label.text().split(': ')[-1]
         criteria_file_path = self.criteria_label.text().split(': ')[-1]       
         try:
@@ -64,7 +65,7 @@ class GradeExamLogic:
             self.exam_grader = self.exam_grader
 
         except FileNotFoundError:
-            error_message = f"Error: File not found"
+            error_message = f"Error: Please select an Exam Folder and Criteria File"
             QMessageBox.critical(None, "Error", error_message)
 
         except Exception as e:
@@ -73,14 +74,13 @@ class GradeExamLogic:
 
 class ViewDetailsLogic:
     def __init__(self, folder_label, criteria_label, score_label):
-        print('GradeExamButton logic instantiated')
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
         self.exam_grader = None
 
+
     def run(self):
-        print('GradeExamButton clicked')
         folder_path = self.folder_label.text().split(': ')[-1]
         criteria_file_path = self.criteria_label.text().split(': ')[-1]       
         try:
@@ -103,7 +103,7 @@ class ViewDetailsLogic:
             show_details_logic.run()
 
         except FileNotFoundError:
-            error_message = f"Error: File not found"
+            error_message = f"Error: Please select an Exam Folder and Criteria File"
             QMessageBox.critical(None, "Error", error_message)
 
         except Exception as e:
@@ -112,45 +112,32 @@ class ViewDetailsLogic:
 
 class ShowDetailsLogic:
     def __init__(self, exam_grader):
-        print('ShowDetailsButton logic instantiated')
         self.results_dict = exam_grader.get_results_dict()
 
     def run(self):
-        print('ShowDetailsButton clicked')
         if self.results_dict is not None:
             # Create a new window to display the table
             table_window = QDialog()
             table_window.setWindowTitle('Exam Details')
+            table_window.setWindowIcon(QIcon('images/icon1.png'))
 
             # Create a table to display the exam details
             table = QTableWidget()
             table.setColumnCount(4)
-            table.setHorizontalHeaderLabels(['Device', 'Question', 'Answer', 'Result', 'Score'])
+            table.setHorizontalHeaderLabels(['Device', 'Question', 'Result', 'Score'])
 
             # Add the exam details to the table
             rows = []
             for exam_file, results in self.results_dict.items():
                 device = exam_file.split('.')[0]
-                if exam_file == "R1config.txt":
-                    for key, value in results.items():
-                        if "R1" in key:
-                            question = f"{key}"
-                            answer = value['answer']
-                            weight = value['weight']
-                            points = value['points']
-                            result = 'Correct' if points > 0 else 'Incorrect'
-                            score = weight if points > 0 else 0
-                            rows.append((question, answer, result, score))
-                elif exam_file == "S1config.txt":
-                    for key, value in results.items():
-                        if "S1" in key:
-                            question = f"{key}"
-                            answer = value['answer']
-                            weight = value['weight']
-                            points = value['points']
-                            result = 'Correct' if points > 0 else 'Incorrect'
-                            score = weight if points > 0 else 0
-                            rows.append((question, answer, result, score))
+                for key, value in results.items():
+                    question = f"{key}"
+                    answer = value['answer']
+                    weight = value['weight']
+                    points = value['points']
+                    result = 'Correct' if points > 0 else 'Incorrect'
+                    score = weight if points > 0 else 0
+                    rows.append((device, question, result, score))
 
             for i, row in enumerate(rows):
                 table.insertRow(i)
@@ -179,10 +166,10 @@ class ShowDetailsLogic:
 
             # Create a button box to hold the Close and Save buttons
             button_box = QHBoxLayout()
-            close_button = QPushButton('Close')
             save_button = QPushButton('Save')
-            button_box.addWidget(close_button)
+            close_button = QPushButton('Close')            
             button_box.addWidget(save_button)
+            button_box.addWidget(close_button)
             layout.addLayout(button_box)
 
             # Connect the Close button to the table window's close method
@@ -191,15 +178,15 @@ class ShowDetailsLogic:
             # Connect the Save button to a function that saves the results to a CSV file
             save_button.clicked.connect(lambda: self.save_to_csv(rows))
 
-            # Set the minimum size of the window
-            min_size = QSize(table_width, 600)
-            table_window.setMinimumSize(min_size)
-
             # Position the window to the right of the main window
             main_window = QApplication.activeWindow()
             main_window_pos = main_window.pos()
             main_window_size = main_window.size()
             table_window.move(main_window_pos.x() + main_window_size.width(), main_window_pos.y())
+
+            # Set the minimum size of the window
+            min_size = QSize(table_width + 150, 1000)
+            table_window.setMinimumSize(min_size)
 
             # Show the window
             table_window.exec_()
@@ -216,7 +203,7 @@ class ShowDetailsLogic:
         # Write the exam results to the CSV file
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['Question', 'Answer', 'Result', 'Score'])
+            writer.writerow(['Device', 'Question', 'Result', 'Score'])
             for row in rows:
                 writer.writerow(row)
         
@@ -225,23 +212,20 @@ class ShowDetailsLogic:
 
 class ResetLogic:
     def __init__(self, folder_label, criteria_label, score_label):
-        print('ResetButton logic instantiated')
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
 
     def run(self):
-        print('ResetButton clicked')
         self.folder_label.clear()
         self.criteria_label.clear()
         self.score_label.setText('Score: 0')
 
 class QuitLogic:
     def __init__(self):
-        print('QuitButton logic instantiated')
+        None
 
     def run(self):
-        print('QuitButton clicked')
         choice = QMessageBox.question(None, "Quit", "Are you sure you want to quit?",
                                        QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:

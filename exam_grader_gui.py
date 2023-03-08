@@ -1,17 +1,35 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QHBoxLayout, QVBoxLayout, QGridLayout, QMainWindow
 from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ResetLogic, QuitLogic,ViewDetailsLogic
-from PyQt5.QtGui import QFont, QPalette, QColor, QIcon
+from PyQt5.QtGui import QFont, QPalette, QColor, QIcon, QPixmap
 from PyQt5.QtCore import Qt
 
 class ExamGraderGUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Exam Grader')
+        self.setWindowIcon(QIcon('images/icon1.png'))
         self.setGeometry(100, 100, 800,0)
-        # Load the icon from a file
-        app_icon = QIcon('SpindleyLogo.png')
-        # Set the application icon
-        QApplication.setWindowIcon(app_icon)
+
+        # Load the icons from files
+        window_icon = QIcon('images/icon1.png')
+        taskbar_icon = QIcon('images/icon1.png')
+
+        # Set the window icon
+        self.setWindowIcon(window_icon)
+
+        # Set the taskbar icon
+        if sys.platform == 'win32':
+            import ctypes
+            myappid = 'spindley.examgrader.v0004' # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            self.setWindowIcon(taskbar_icon)
+
+        # Create the banner label
+        banner_label = QLabel(self)
+        banner_label.setPixmap(QPixmap('images/banner5.png'))
+
+        # TODO Set the background
+        # self.setStyleSheet("background-image: url('images/bg.jpg');")
 
         # Define the exam grader attributes
         self.criteria = {}
@@ -68,14 +86,13 @@ class ExamGraderGUI(QWidget):
         self.quit_button.clicked.connect(self.quit_logic.run)
 
         # Create the layouts
-        button_layout1 = QHBoxLayout()
-        button_layout1.addWidget(self.browse_folder_button)
-        button_layout1.addWidget(self.folder_path_label)
+        browse_button_layout = QHBoxLayout()
+        browse_button_layout.addWidget(self.browse_folder_button)
+        browse_button_layout.addWidget(self.folder_path_label)
 
-        button_layout2 = QHBoxLayout()
-        button_layout2.addWidget(self.browse_file_button)
-        button_layout2.addWidget(self.criteria_file_label)
-        button_layout2.addWidget(QLabel())  # To fill up the remaining space
+        file_button_layout = QHBoxLayout()
+        file_button_layout.addWidget(self.browse_file_button)
+        file_button_layout.addWidget(self.criteria_file_label)
 
         button_layout6 = QHBoxLayout()
         button_layout6.addWidget(self.reset_button)
@@ -83,8 +100,9 @@ class ExamGraderGUI(QWidget):
 
         # Create the main layout
         main_layout = QVBoxLayout()
-        main_layout.addLayout(button_layout1)
-        main_layout.addLayout(button_layout2)
+        main_layout.addWidget(banner_label)
+        main_layout.addLayout(browse_button_layout)
+        main_layout.addLayout(file_button_layout)
         main_layout.addLayout(self.score_box)
         main_layout.addWidget(self.reset_button)
         main_layout.addWidget(self.quit_button)
