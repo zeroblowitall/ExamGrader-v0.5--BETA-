@@ -1,11 +1,12 @@
 {
-    "Device Initialised R1": {"answer": "no ip routing", "weight": 5.0, "regex": false, "device": "router", "existence":"not present"},
+    "Device Initialised R1": {"answer": "no ip[- ]routing", "weight": 5.0, "regex": true, "device": "router", "existence":"not present"},
+    "Device Initialised S1": {"answer": "switchport mode access", "weight": 5.0, "regex": false, "device": "switch", "existence":"not present"},
 
-    "No Domain Lookup R1": {"answer": "no ip domain lookup", "weight": 1.0, "regex": false, "device": "router", "existence":"present"},
+    "No Domain Lookup R1": {"answer": "no ip domain[- ]lookup", "weight": 1.0, "regex": true, "device": "router", "existence":"present"},
     "Hostname R1": {"answer": "hostname R1", "weight": 1.0, "regex": false, "device": "router", "existence":"present"},
-    "IP Domain Name R1": {"answer": "ip domain name ccna-lab.com", "weight": 1.0, "regex": false, "device": "router", "existence":"present"},
+    "IP Domain Name R1": {"answer": "ip domain[- ]name ccna-lab.com", "weight": 1.0, "regex": true, "device": "router", "existence":"present"},
     "Enable Password R1": {"answer": "enable secret ", "weight": 1.0, "regex": false, "device": "router", "existence":"present"},
-    "Console Password R1": {"answer": "line con 0\n password", "weight": 1.0, "regex": true, "device": "router", "existence":"present"},
+    "Console Password R1": {"answer": "(?<=line con 0\\s)(?:.|\\n)*?password(?:.|\\n)*?(?=line vty 0 4)", "weight": 1.0, "regex": true, "device": "router", "existence":"present"},
     "Admin Account R1": {"answer": "username admin ", "weight": 2.0, "regex": false, "device": "router", "existence":"present"},
     "VTY Login Local R1": {"answer": "line vty 0 4\n login local", "weight": 1.0, "regex": true, "device": "router", "existence":"present"},
     "Transport SSH R1": {"answer": "transport input ssh", "weight": 1.0, "regex": false, "device": "router", "existence":"present"},
@@ -29,13 +30,11 @@
     "Int G0/1 IPv6 LL R1": {"answer": "(?<=interface GigabitEthernet0/1\\s)(?:.|\\n)*?ipv6 address fe80::1 link-local(?:.|\\n)*?(?=interface Serial0/0/0)","weight": 1.0,"regex": true,"device": "router", "existence":"present"},
     "Int G0/1 no shutdown R1": {"answer": "(?<=interface GigabitEthernet0/1\\s)(?:.|\\n)*?shutdown(?:.|\\n)*?(?=interface Serial0/0/0)","weight": 1.0,"regex": true,"device": "router", "existence":"not present"},
 
-    "Device Initialised S1": {"answer": "switchport mode access", "weight": 5.0, "regex": false, "device": "switch", "existence":"not present"},
-    
-    "No Domain Lookup S1": {"answer": "no ip domain-lookup", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
+    "No Domain Lookup S1": {"answer": "no ip domain[- ]lookup", "weight": 1.0, "regex": true, "device": "switch", "existence":"present"},
     "Hostname S1": {"answer": "hostname S1", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
-    "IP Domain Name S1": {"answer": "ip domain-name ccna-lab.com", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
+    "IP Domain Name S1": {"answer": "ip domain[- ]name ccna-lab.com", "weight": 1.0, "regex": true, "device": "switch", "existence":"present"},
     "Enable Password S1": {"answer": "enable secret ", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
-    "Console Password S1": {"answer": "line con 0\n password", "weight": 1.0, "regex": true, "device": "switch", "existence":"present"},
+    "Console Password S1": {"answer": "(?<=line con 0\\s)(?:.|\\n)*?password(?:.|\\n)*?(?=line vty 0 4)", "weight": 1.0, "regex": true, "device": "switch", "existence":"present"},
     "Admin Account S1": {"answer": "username admin ", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
     "VTY Login Local S1": {"answer": "line vty 0 4\n login local", "weight": 1.0, "regex": true, "device": "switch", "existence":"present"},
     "Transport SSH S1": {"answer": "transport input ssh", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
@@ -48,5 +47,7 @@
     "Int VLAN 1 IPv6 S1": {"answer": "(?<=interface vlan1\\s)(?:.|\\n)*?ipv6 address 2001:db8:acad:A::2(?:.|\\n)*?(?=line con 0)","weight": 0.4,"regex": true,"device": "switch", "existence":"present"},
     "Int VLAN 1 IPv6 LL S1": {"answer": "(?<=interface vlan1\\s)(?:.|\\n)*?fe80::2(?:.|\\n)*?(?=line con 0)","weight": 0.4,"regex": true,"device": "switch", "existence":"present"},
     "Int VLAN 1 no shutdown S1": {"answer": "(?<=interface vlan1\\s)(?:.|\\n)*?shutdown(?:.|\\n)*?(?=line con 0)","weight": 0.4,"regex": true,"device": "switch", "existence":"not present"},
-    "Default Gateway S1": {"answer": "ip default-gateway 192.168.100.1", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"}
+    "Default Gateway S1": {"answer": "ip default-gateway 192.168.100.1", "weight": 1.0, "regex": false, "device": "switch", "existence":"present"},
+    "Int F0/23 shutdown S1": {"answer": "(?<=interface FastEthernet0/23\\s)(?:.|\\n)*?shutdown(?:.|\\n)*?(?=interface FastEthernet0/24)","weight": 0.5,"regex": true,"device": "switch", "existence":"present"},
+    "Int G0/1 shutdown S1": {"answer": "(?<=interface GigabitEthernet0/1\\s)(?:.|\\n)*?shutdown(?:.|\\n)*?(?=interface GigabitEthernet0/2)","weight": 0.5,"regex": true,"device": "switch", "existence":"present"}
 }

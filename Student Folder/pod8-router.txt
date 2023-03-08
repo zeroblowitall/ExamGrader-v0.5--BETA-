@@ -19,6 +19,7 @@ enable secret 5 $1$BofV$navXaMcT1cSs9n.heWB/J/
 !
 no aaa new-model
 !
+ip domain name ccna-lab.com
 !
 !
 !
@@ -100,6 +101,7 @@ control-plane
 !
 !
 line con 0
+password
 line aux 0
 line 2
  no activation-character
