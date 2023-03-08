@@ -22,7 +22,6 @@ class ExamGrader:
             with open(os.path.join(self.exam_folder_path, exam_file), 'r') as f:
                 exam_file_contents = f.read()
 
-            print(f'Grading {exam_file}...')
             self.results_dict[exam_file] = {}
             found_strings = set()
             for key in self.criteria.keys():

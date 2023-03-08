@@ -11,9 +11,8 @@ app.setWindowIcon(QIcon('images/icon1.png'))
 class ButtonLogic:
     def __init__(self, label):
         self.label = label
-        print(f"{self.__class__.__name__} logic instantiated")
     def run(self):
-        print(f"{self.__class__.__name__} clicked")
+        None
 
 class FilesToCheckButtonLogic(ButtonLogic):
     def run(self):
@@ -79,7 +78,6 @@ class ViewDetailsLogic:
         self.score_label = score_label
         self.exam_grader = None
 
-
     def run(self):
         folder_path = self.folder_label.text().split(': ')[-1]
         criteria_file_path = self.criteria_label.text().split(': ')[-1]       
@@ -130,11 +128,20 @@ class ShowDetailsLogic:
             # Create a table to display the exam details
             table = QTableWidget()
             table.setColumnCount(5)
-            table.setHorizontalHeaderLabels(['Device', 'Question', 'Result', 'Score', 'weight'])
+            table.setHorizontalHeaderLabels(['Device', 'Question', 'Result', 'Score', 'Weight'])
 
-            # Add the exam details to the table
-            rows = []
-            total_score = 0
+            # Read the criteria sections from the criteria.json file
+            with open('criteria.json') as f:
+                criteria_dict = json.load(f)
+            sections = {}
+            for key, value in criteria_dict.items():
+                section = value.get('section', 'Default')
+                if section not in sections:
+                    sections[section] = []
+                sections[section].append(key)
+
+            # Group the rows by section
+            section_rows = {}
             for exam_file, results in self.results_dict.items():
                 device = exam_file.split('.')[0]
                 for key, value in results.items():
@@ -144,13 +151,42 @@ class ShowDetailsLogic:
                     points = value['points']
                     result = 'Correct' if points > 0 else 'Incorrect'
                     score = weight if points > 0 else 0
-                    rows.append((device, question, result, score, weight))
-                    total_score +=score
-            
+                    section = criteria_dict.get(key, {}).get('section', 'Default')
+                    row = (device, question, result, score, weight)
+                    if section not in section_rows:
+                        section_rows[section] = []
+                    section_rows[section].append(row)
+
+            # Add the exam details to the table by section
+            total_score = 0
+            for section_name, section_keys in sections.items():
+                section_rows_list = []
+                for row in section_rows.get(section_name, []):
+                    section_rows_list.append(row)
+                if section_rows_list:
+                    # Add the section name row
+                    table.insertRow(table.rowCount())
+                    section_item = QTableWidgetItem(f'{section_name} Section')
+                    section_item.setFlags(Qt.NoItemFlags)
+                    section_item.setBackground(QColor('lightgray'))
+                    table.setItem(table.rowCount() - 1, 0, section_item)
+                    table.setSpan(table.rowCount() - 1, 0, 1, table.columnCount())
+                    # Add the rows for this section
+                    for row in section_rows_list:
+                        table.insertRow(table.rowCount())
+                        for j, item in enumerate(row):
+                            table.setItem(table.rowCount() - 1, j, QTableWidgetItem(str(item)))
+                            # Set the background color of the result column
+                            if j == 2:
+                                if item == 'Correct':
+                                    table.item(table.rowCount() - 1, j).setBackground(QColor('green'))
+                                else:
+                                    table.item(table.rowCount() - 1, j).setBackground(QColor('red'))
+                        total_score += row[3]
+
             # Calculate pass/fail status
             pass_threshold = 45.0
             pass_status = 'PASS' if total_score >= pass_threshold else 'FAIL'
-            #total_score_label.setText('Total Score ' + total_score + ' ' + pass_status)
             if pass_status == 'PASS':
                 total_score_label.setText(f'Total Score: {round(total_score, 2)} - Pass')
                 total_score_groupbox.setStyleSheet('background-color: green')
@@ -162,18 +198,6 @@ class ShowDetailsLogic:
             total_score_groupbox_layout = QHBoxLayout()
             total_score_groupbox_layout.addWidget(total_score_label)
             total_score_groupbox.setLayout(total_score_groupbox_layout)
-
-            for i, row in enumerate(rows):
-                table.insertRow(i)
-                for j, item in enumerate(row):
-                    table.setItem(i, j, QTableWidgetItem(str(item)))
-
-                    # Set the background color of the result column
-                    if j == 2:
-                        if item == 'Correct':
-                            table.item(i, j).setBackground(QColor('green'))
-                        else:
-                            table.item(i, j).setBackground(QColor('red'))
 
             # Resize the columns to fit the contents
             table.resizeColumnsToContents()
@@ -201,7 +225,7 @@ class ShowDetailsLogic:
             close_button.clicked.connect(table_window.close)
 
             # Connect the Save button to a function that saves the results to a CSV file
-            save_button.clicked.connect(lambda: self.save_to_csv(rows))
+            save_button.clicked.connect(lambda: self.save_to_csv(section_rows))
 
             # Position the window to the right of the main window
             main_window = QApplication.activeWindow()
@@ -218,7 +242,7 @@ class ShowDetailsLogic:
         else:
             print('ExamGrader instance not found.')
 
-    def save_to_csv(self, rows):
+    def save_to_csv(self, section_rows):
         # Get the current timestamp for the filename
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
@@ -228,12 +252,14 @@ class ShowDetailsLogic:
         # Write the exam results to the CSV file
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['Device', 'Question', 'Result', 'Score'])
-            for row in rows:
-                writer.writerow(row)
-        
+            writer.writerow(['Section', 'Device', 'Question', 'Result', 'Score', 'Weight'])
+            for section_name, rows in section_rows.items():
+                for row in rows:
+                    writer.writerow([section_name] + list(row))
+    
         # Show a message box to confirm that the results were saved
         QMessageBox.information(None, 'Save Results', f'The exam results have been saved to "{filename}".')
+
 
 class ResetLogic:
     def __init__(self, folder_label, criteria_label, score_label):
