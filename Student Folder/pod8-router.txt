@@ -1,0 +1,116 @@
+Building configuration...
+
+Current configuration : 1506 bytes
+!
+! Last configuration change at 12:10:52 UTC Wed Mar 8 2023
+!
+version 15.7
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$BofV$navXaMcT1cSs9n.heWB/J/
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+no ip routing
+!
+!
+!
+!
+!
+!
+no ip cef
+no ipv6 cef
+multilink bundle-name authenticated
+!
+!
+!
+license udi pid CISCO1941/K9 sn FGL192120T2
+!
+!
+!
+redundancy
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 192.168.100.1 255.255.255.224
+!
+interface Loopback1
+ ip address 192.168.100.65 255.255.255.248
+!
+interface Embedded-Service-Engine0/0
+ no ip address
+ no ip route-cache
+ shutdown
+!
+interface GigabitEthernet0/0
+ no ip address
+ no ip route-cache
+ shutdown
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/1
+ ip address 192.168.100.65 255.255.255.224
+ no ip route-cache
+ duplex auto
+ speed auto
+ ipv6 address 2001:DB8:ACAD::A/64
+!
+interface Serial0/0/0
+ no ip address
+ no ip route-cache
+ shutdown
+ clock rate 2000000
+!
+interface Serial0/0/1
+ no ip address
+ no ip route-cache
+ shutdown
+ clock rate 2000000
+!
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+ip route 0.0.0.0 0.0.0.0 8.8.8.8
+ip ssh version 2
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+line aux 0
+line 2
+ no activation-character
+ no exec
+ transport preferred none
+ transport output pad telnet rlogin lapb-ta mop udptn v120 ssh
+ stopbits 1
+line vty 0 4
+ login
+ transport input none
+!
+scheduler allocate 20000 1000
+!
+end

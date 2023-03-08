@@ -60,7 +60,7 @@ class GradeExamLogic:
             total_score = self.exam_grader.total_score
             
             # Update the output text and score label
-            self.score_label.setText(f'Score: {total_score}')
+            self.score_label.setText(f'Score: {round(total_score, 2)}')
             self.criteria = self.exam_grader.criteria
             self.exam_grader = self.exam_grader
 
@@ -94,7 +94,7 @@ class ViewDetailsLogic:
             total_score = self.exam_grader.total_score
             
             # Update the output text and score label
-            self.score_label.setText(f'Score: {total_score}')
+            self.score_label.setText(f'Score: {round(total_score, 2)}')
             self.criteria = self.exam_grader.criteria
             self.exam_grader = self.exam_grader
 
@@ -129,8 +129,8 @@ class ShowDetailsLogic:
 
             # Create a table to display the exam details
             table = QTableWidget()
-            table.setColumnCount(4)
-            table.setHorizontalHeaderLabels(['Device', 'Question', 'Result', 'Score'])
+            table.setColumnCount(5)
+            table.setHorizontalHeaderLabels(['Device', 'Question', 'Result', 'Score', 'weight'])
 
             # Add the exam details to the table
             rows = []
@@ -144,18 +144,18 @@ class ShowDetailsLogic:
                     points = value['points']
                     result = 'Correct' if points > 0 else 'Incorrect'
                     score = weight if points > 0 else 0
-                    rows.append((device, question, result, score))
+                    rows.append((device, question, result, score, weight))
                     total_score +=score
             
             # Calculate pass/fail status
-            pass_threshold = 51.0
+            pass_threshold = 45.0
             pass_status = 'PASS' if total_score >= pass_threshold else 'FAIL'
             #total_score_label.setText('Total Score ' + total_score + ' ' + pass_status)
             if pass_status == 'PASS':
-                total_score_label.setText(f'Total Score: {total_score} - Pass')
+                total_score_label.setText(f'Total Score: {round(total_score, 2)} - Pass')
                 total_score_groupbox.setStyleSheet('background-color: green')
             else:
-                total_score_label.setText(f'Total Score: {total_score} - Fail')
+                total_score_label.setText(f'Total Score: {round(total_score, 2)} - Fail')
                 total_score_groupbox.setStyleSheet('background-color: red')
             
             # Add the total score label to the total score groupbox
