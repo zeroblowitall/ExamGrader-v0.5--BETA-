@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QLabel
 from PyQt5.QtGui import QColor, QIcon
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, Qt
 from grader_logic import ExamGrader
 from datetime import datetime
 import json, os, csv, sys
@@ -121,6 +121,12 @@ class ShowDetailsLogic:
             table_window.setWindowTitle('Exam Details')
             table_window.setWindowIcon(QIcon('images/icon1.png'))
 
+            # Create a QGroupBox for the total score details
+            total_score_groupbox = QGroupBox()
+            total_score_label = QLabel()
+            total_score_label.setAlignment(Qt.AlignCenter)
+            total_score_label.setMargin(10)
+
             # Create a table to display the exam details
             table = QTableWidget()
             table.setColumnCount(4)
@@ -128,6 +134,7 @@ class ShowDetailsLogic:
 
             # Add the exam details to the table
             rows = []
+            total_score = 0
             for exam_file, results in self.results_dict.items():
                 device = exam_file.split('.')[0]
                 for key, value in results.items():
@@ -138,6 +145,23 @@ class ShowDetailsLogic:
                     result = 'Correct' if points > 0 else 'Incorrect'
                     score = weight if points > 0 else 0
                     rows.append((device, question, result, score))
+                    total_score +=score
+            
+            # Calculate pass/fail status
+            pass_threshold = 51.0
+            pass_status = 'PASS' if total_score >= pass_threshold else 'FAIL'
+            #total_score_label.setText('Total Score ' + total_score + ' ' + pass_status)
+            if pass_status == 'PASS':
+                total_score_label.setText(f'Total Score: {total_score} - Pass')
+                total_score_groupbox.setStyleSheet('background-color: green')
+            else:
+                total_score_label.setText(f'Total Score: {total_score} - Fail')
+                total_score_groupbox.setStyleSheet('background-color: red')
+            
+            # Add the total score label to the total score groupbox
+            total_score_groupbox_layout = QHBoxLayout()
+            total_score_groupbox_layout.addWidget(total_score_label)
+            total_score_groupbox.setLayout(total_score_groupbox_layout)
 
             for i, row in enumerate(rows):
                 table.insertRow(i)
@@ -161,6 +185,7 @@ class ShowDetailsLogic:
 
             # Create a layout for the table and add it to the window
             layout = QVBoxLayout()
+            layout.addWidget(total_score_groupbox)
             layout.addWidget(table)
             table_window.setLayout(layout)
 
