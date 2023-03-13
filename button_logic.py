@@ -1,12 +1,13 @@
+import json, os, csv, sys
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QLabel
 from PyQt5.QtGui import QColor, QIcon
 from PyQt5.QtCore import QSize, Qt
-from grader_logic import ExamGrader
 from datetime import datetime
-import json, os, csv, sys
+from grader_logic import ExamGrader
+
 
 app = QApplication(sys.argv)
-app.setWindowIcon(QIcon('images/icon1.png'))
+app.setWindowIcon(QIcon('images/icon.png'))
 
 class ButtonLogic:
     def __init__(self, label):
@@ -24,7 +25,7 @@ class FilesToCheckButtonLogic(ButtonLogic):
         )
         if folder_path:
             print(folder_path)
-            self.label.setText(f"Selected Folder: {os.path.basename(folder_path)}")
+            self.label.setText(f"Folder: {os.path.basename(folder_path)}")
 
 class CriteriaFileButtonLogic(ButtonLogic):
     def run(self):
@@ -36,7 +37,7 @@ class CriteriaFileButtonLogic(ButtonLogic):
         )
         if file_path:
             print(file_path)
-            self.label.setText(f"Selected Criteria File: {os.path.basename(file_path)}")
+            self.label.setText(f"File: {os.path.basename(file_path)}")
 
 class GradeExamLogic:
     def __init__(self, folder_label, criteria_label, score_label):
@@ -46,11 +47,13 @@ class GradeExamLogic:
         self.exam_grader = None
 
     def run(self):
-        folder_path = self.folder_label.text().split(': ')[-1]
-        criteria_file_path = self.criteria_label.text().split(': ')[-1]       
+        folder_path_display = self.folder_label.text().split(': ')[-1]
+        folder_path = os.path.abspath(folder_path_display)
+        criteria_file_path = self.criteria_label.text().split(': ')[-1]
+        print(criteria_file_path)  
         try:
             # Create an instance of the ExamGrader class
-            self.exam_grader = ExamGrader(folder_path, criteria_file_path)
+            self.exam_grader = ExamGrader(folder_path_display, criteria_file_path)
             # Load the criteria
             with open(criteria_file_path, 'r') as f:
                 self.criteria = json.load(f)
@@ -71,6 +74,9 @@ class GradeExamLogic:
             error_message = f"Error: {str(e)}"
             QMessageBox.critical(None, "Error", error_message)
 
+        # Update the folder_label widget with the simplified path
+        self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
+
 class ViewDetailsLogic:
     def __init__(self, folder_label, criteria_label, score_label):
         self.folder_label = folder_label
@@ -80,7 +86,8 @@ class ViewDetailsLogic:
 
     def run(self):
         folder_path = self.folder_label.text().split(': ')[-1]
-        criteria_file_path = self.criteria_label.text().split(': ')[-1]       
+        criteria_file_path = self.criteria_label.text().split(': ')[-1]
+        print(criteria_file_path) 
         try:
             # Create an instance of the ExamGrader class
             self.exam_grader = ExamGrader(folder_path, criteria_file_path)
@@ -117,7 +124,7 @@ class ShowDetailsLogic:
             # Create a new window to display the table
             table_window = QDialog()
             table_window.setWindowTitle('Exam Details')
-            table_window.setWindowIcon(QIcon('images/icon1.png'))
+            table_window.setWindowIcon(QIcon('images/icon.png'))
 
             # Create a QGroupBox for the total score details
             total_score_groupbox = QGroupBox()
