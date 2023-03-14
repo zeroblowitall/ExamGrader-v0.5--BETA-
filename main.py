@@ -53,7 +53,7 @@ class ExamGraderGUI(QtWidgets.QWidget):
             if part_number == 1:
                 part_name = 'Subnetting'
             elif part_number == 2:
-                part_name = 'Init / Config'
+                part_name = 'Init & Config'
             elif part_number == 3:
                 continue  # This part is merged with part 2
             elif part_number == 4:
@@ -62,21 +62,21 @@ class ExamGraderGUI(QtWidgets.QWidget):
                 part_name = 'Information'
 
             if part_number == 2:
-                part_label = QtWidgets.QLabel(f'Part 2/3: {part_name}. Score:', parts_area)
+                part_label = QtWidgets.QLabel(f'Part 2 & 3: {part_name}. ', parts_area)
             else:
-                part_label = QtWidgets.QLabel(f'Part {part_number}: {part_name}. Score:', parts_area)
+                part_label = QtWidgets.QLabel(f'Part {part_number}: {part_name}. ', parts_area)
             part_label.setStyleSheet('color: #B9BABD; font-size: 24px;')
             part_label.setFixedWidth(350)
             parts_area_layout.addWidget(part_label, i, 0)
 
             enter_result = QtWidgets.QLineEdit(parts_area)
             enter_result.setFixedWidth(80)
-            enter_result.setText('0')  # Set default value to 0
+            enter_result.setText('0.0')  # Set default value to 0
             if part_number == 2:
                 enter_result.setVisible(False)  # Hide input field for part 2/3
             parts_area_layout.addWidget(enter_result, i, 1)
 
-            result_label = QtWidgets.QLabel('0', parts_area)
+            result_label = QtWidgets.QLabel('0.0', parts_area)
             result_label.setStyleSheet('color: #B9BABD;font-size: 24px;')
             result_label.setFixedWidth(50)
             parts_area_layout.addWidget(result_label, i, 3)
@@ -93,7 +93,7 @@ class ExamGraderGUI(QtWidgets.QWidget):
 
         # Create the Score box
         self.score_box = QtWidgets.QGridLayout()
-        self.score_label = QtWidgets.QLabel('TotalScore: 0', self)
+        self.score_label = QtWidgets.QLabel('Score: 0.0', self)
         self.score_label.setAlignment(QtCore.Qt.AlignCenter)
         self.score_label.setFont(QtGui.QFont('Calibri', 12))
         palette = QtGui.QPalette()

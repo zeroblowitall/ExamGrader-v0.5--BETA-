@@ -67,12 +67,16 @@ class GradeExamLogic:
             for part_number, part_info in self.part_dict.items():
                 result_field = part_info['result_field']
                 result_label = part_info['result_label']
-                score = int(result_field.text())
+                score = float(result_field.text())
                 self.individual_scores[part_number] = score
-                result_label.setText(str(score))
+                if part_number == 2:
+                    # Update the score label for Part 2/3
+                    result_label.setText(str(round(total_score, 2)))
+                else:
+                    result_label.setText(str(round(score, 2)))
 
             total_score += sum(self.individual_scores.values())
-            self.score_label.setText(f'Total Score: {round(total_score, 2)}')
+            self.score_label.setText(f'Score: {round(total_score, 2)}')
 
         except FileNotFoundError:
             error_message = f"Error: Please select an Exam Folder and Criteria File"
@@ -113,12 +117,16 @@ class ViewDetailsLogic:
             for part_number, part_info in self.part_dict.items():
                 result_field = part_info['result_field']
                 result_label = part_info['result_label']
-                score = int(result_field.text())
+                score = float(result_field.text())
                 self.individual_scores[part_number] = score
-                result_label.setText(str(score))
+                if part_number == 2:
+                    # Update the score label for Part 2/3
+                    result_label.setText(str(round(total_score, 2)))
+                else:
+                    result_label.setText(str(round(score, 2)))
 
             total_score += sum(self.individual_scores.values())
-            self.score_label.setText(f'Total Score: {round(total_score, 2)}')
+            self.score_label.setText(f'Score: {round(total_score, 2)}')
 
             show_details_logic = ShowDetailsLogic(self.exam_grader)  # Pass the ExamGrader object to the constructor
             show_details_logic.run()
@@ -296,10 +304,10 @@ class ResetLogic:
     def run(self):
         self.folder_label.clear()
         self.criteria_label.clear()
-        self.score_label.setText('Score: 0')
+        self.score_label.setText('Score: 0.0')
         for part_number, part_info in self.part_dict.items():
-            part_info['result_field'].setText('0')
-            part_info['result_label'].setText('0')
+            part_info['result_field'].setText('0.0')
+            part_info['result_label'].setText('0.0')
 
 
 class QuitLogic:
