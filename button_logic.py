@@ -52,7 +52,6 @@ class GradeExamLogic:
         folder_path_display = self.folder_label.text().split(': ')[-1]
         folder_path = os.path.abspath(folder_path_display)
         criteria_file_path = self.criteria_label.text().split(': ')[-1]
-        print(criteria_file_path)  
         try:
             # Create an instance of the ExamGrader class
             self.exam_grader = ExamGrader(folder_path_display, criteria_file_path)
@@ -158,6 +157,7 @@ class ShowDetailsLogic:
             total_score_label = QLabel()
             total_score_label.setAlignment(Qt.AlignCenter)
             total_score_label.setMargin(10)
+            total_score_label.setStyleSheet('font-size:30px;')
 
             # Create a table to display the exam details
             table = QTableWidget()
@@ -193,16 +193,20 @@ class ShowDetailsLogic:
 
             # Add the exam details to the table by section
             total_score = 0
+
             for section_name, section_keys in sections.items():
                 section_rows_list = []
+                section_total_score = 0
                 for row in section_rows.get(section_name, []):
                     section_rows_list.append(row)
+                    section_total_score += row[3]  # Add up the score for each row in this section
                 if section_rows_list:
-                    # Add the section name row
+                    # Add the section name and total score row
                     table.insertRow(table.rowCount())
-                    section_item = QTableWidgetItem(f'{section_name} Section')
+                    section_item = QTableWidgetItem(f'{section_name} Section: {round(section_total_score, 2)} Points')
                     section_item.setFlags(Qt.NoItemFlags)
                     section_item.setBackground(QColor('lightgray'))
+                    section_item.setForeground(QColor('black')) # Change the section header text color to blue
                     table.setItem(table.rowCount() - 1, 0, section_item)
                     table.setSpan(table.rowCount() - 1, 0, 1, table.columnCount())
                     # Add the rows for this section
@@ -213,20 +217,20 @@ class ShowDetailsLogic:
                             # Set the background color of the result column
                             if j == 2:
                                 if item == 'Correct':
-                                    table.item(table.rowCount() - 1, j).setBackground(QColor('green'))
+                                    table.item(table.rowCount() - 1, j).setBackground(QColor('#90CAC7'))
                                 else:
-                                    table.item(table.rowCount() - 1, j).setBackground(QColor('red'))
-                        total_score += row[3]
+                                    table.item(table.rowCount() - 1, j).setBackground(QColor('#B26D70'))
+                    total_score += section_total_score  # Add the section score to the total score
 
             # Calculate pass/fail status
             pass_threshold = 45.0
             pass_status = 'PASS' if total_score >= pass_threshold else 'FAIL'
             if pass_status == 'PASS':
                 total_score_label.setText(f'Total Score: {round(total_score, 2)} - Pass')
-                total_score_groupbox.setStyleSheet('background-color: green')
+                total_score_groupbox.setStyleSheet('background-color: #90CAC7')
             else:
                 total_score_label.setText(f'Total Score: {round(total_score, 2)} - Fail')
-                total_score_groupbox.setStyleSheet('background-color: red')
+                total_score_groupbox.setStyleSheet('background-color: #B26D70')
             
             # Add the total score label to the total score groupbox
             total_score_groupbox_layout = QHBoxLayout()

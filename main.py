@@ -30,16 +30,30 @@ class ExamGraderGUI(QtWidgets.QWidget):
         # Create the browse folder and file buttons and labels
         self.browse_folder_button = MyButton('Select Folder', 'images/bigwhitebutton.png', 'images/bigwhitehoverbutton.png', 'images/bigwhitepressedbutton.png', 'images/bigwhitepressedbutton.png', self)
         self.folder_path_label = QtWidgets.QLabel(self)
-        self.folder_path_label.setStyleSheet('color: #44474E; font-size: 20px;')
+        self.folder_path_label.setStyleSheet('border: 1px solid black; border-radius: 15px;color: #44474E; font-size: 20px; text-align: center;')
         self.browse_file_button = MyButton('Select Criteria', 'images/bigwhitebutton.png', 'images/bigwhitehoverbutton.png', 'images/bigwhitepressedbutton.png', 'images/bigwhitepressedbutton.png', self)
         self.criteria_file_label = QtWidgets.QLabel(self)
-        self.criteria_file_label.setStyleSheet('color: #44474E; font-size: 20px;')
+        self.criteria_file_label.setStyleSheet('border: 1px solid black; border-radius: 15px;color: #44474E; font-size: 20px; text-align: center;')
+        self.folder_path_label.setFixedSize(400, 50)
+        self.criteria_file_label.setFixedSize(400, 50)
+        self.folder_path_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.criteria_file_label.setAlignment(QtCore.Qt.AlignCenter)
+
         # Create the browse folder and file layouts
         browse_button_layout = QtWidgets.QGridLayout()
+
+        folder_box = QtWidgets.QHBoxLayout()
+        folder_box.addWidget(self.folder_path_label)
+        folder_box.addStretch(1)
+
+        criteria_box = QtWidgets.QHBoxLayout()
+        criteria_box.addWidget(self.criteria_file_label)
+        criteria_box.addStretch(1)
+
         browse_button_layout.addWidget(self.browse_folder_button, 1, 0)
-        browse_button_layout.addWidget(self.folder_path_label, 2, 0)
+        browse_button_layout.addLayout(folder_box, 2, 0)
         browse_button_layout.addWidget(self.browse_file_button, 3, 0)
-        browse_button_layout.addWidget(self.criteria_file_label, 4, 0)
+        browse_button_layout.addLayout(criteria_box, 4, 0)
 
         # Create the group of buttons and labels on the right-hand side of the GUI
         parts_area = QtWidgets.QGroupBox(self)
