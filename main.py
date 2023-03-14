@@ -8,7 +8,6 @@ class ExamGraderGUI(QtWidgets.QWidget):
         self.setWindowTitle('Exam Grader')
         self.setWindowIcon(QtGui.QIcon('images/icon.png'))
         self.setGeometry(100, 100, 1000,0)
-        #self.setStyleSheet('background-color: #383C43;')
 
         # Load the icons from files / set the window icon and taskbar icon
         window_icon = QtGui.QIcon('images/icon.png')
@@ -42,28 +41,52 @@ class ExamGraderGUI(QtWidgets.QWidget):
         browse_button_layout.addWidget(self.browse_file_button, 3, 0)
         browse_button_layout.addWidget(self.criteria_file_label, 4, 0)
 
-        ## Create the group of buttons and labels on the right-hand side of the GUI
+        # Create the group of buttons and labels on the right-hand side of the GUI
         parts_area = QtWidgets.QGroupBox(self)
         parts_area_layout = QtWidgets.QGridLayout(parts_area)
-        part_names = ['Subnetting', 'Initialization', 'Configuration', 'Testing', 'Information']
+        part_dict = {}
+        self.overall_score = 0
 
         for i in range(5):
-            part_label = QtWidgets.QLabel(f'Part {i+1}: {part_names[i]} Score:', parts_area)
+            part_number = i + 1
+            part_name = ''
+            if part_number == 1:
+                part_name = 'Subnetting'
+            elif part_number == 2:
+                part_name = 'Init / Config'
+            elif part_number == 3:
+                continue  # This part is merged with part 2
+            elif part_number == 4:
+                part_name = 'Testing'
+            elif part_number == 5:
+                part_name = 'Information'
+
+            if part_number == 2:
+                part_label = QtWidgets.QLabel(f'Part 2/3: {part_name}. Score:', parts_area)
+            else:
+                part_label = QtWidgets.QLabel(f'Part {part_number}: {part_name}. Score:', parts_area)
             part_label.setStyleSheet('color: #B9BABD; font-size: 24px;')
-            part_label.setFixedWidth(300)
+            part_label.setFixedWidth(350)
             parts_area_layout.addWidget(part_label, i, 0)
 
             enter_result = QtWidgets.QLineEdit(parts_area)
-            enter_result.setFixedWidth(100)
+            enter_result.setFixedWidth(80)
+            enter_result.setText('0')  # Set default value to 0
+            if part_number == 2:
+                enter_result.setVisible(False)  # Hide input field for part 2/3
             parts_area_layout.addWidget(enter_result, i, 1)
-
-            go_button = MyButton('Go', 'images/smallwhitebutton.png', 'images/smallwhitehoverbutton.png', 'images/smallwhitepressedbutton.png', 'images/smallwhitepressedbutton.png', parts_area)
-            parts_area_layout.addWidget(go_button, i, 2)
 
             result_label = QtWidgets.QLabel('0', parts_area)
             result_label.setStyleSheet('color: #B9BABD;font-size: 24px;')
             result_label.setFixedWidth(50)
             parts_area_layout.addWidget(result_label, i, 3)
+
+            part_dict[part_number] = {
+                'name': part_name,
+                'label': part_label,
+                'result_field': enter_result,
+                'result_label': result_label
+            }
 
         parts_area.setLayout(parts_area_layout)
         parts_area.setStyleSheet('QGroupBox{border: 2px solid gray; border-radius: 40px; padding: 5px;background-color: #383C43;}')
@@ -109,9 +132,9 @@ class ExamGraderGUI(QtWidgets.QWidget):
         # Create the button logic instances
         self.browse_folder_logic = FilesToCheckButtonLogic(self.folder_path_label)
         self.browse_file_logic = CriteriaFileButtonLogic(self.criteria_file_label)
-        self.grade_exam_logic = GradeExamLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
-        self.details_button_logic = ViewDetailsLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
-        self.reset_logic = ResetLogic(self.folder_path_label, self.criteria_file_label, self.score_label)
+        self.grade_exam_logic = GradeExamLogic(self.folder_path_label, self.criteria_file_label, self.score_label, part_dict)
+        self.details_button_logic = ViewDetailsLogic(self.folder_path_label, self.criteria_file_label, self.score_label, part_dict)
+        self.reset_logic = ResetLogic(self.folder_path_label, self.criteria_file_label, self.score_label, part_dict)
         self.quit_logic = QuitLogic()
         #Connect the button signals to their slots
         self.browse_folder_button.clicked.connect(self.browse_folder_logic.run)

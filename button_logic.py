@@ -40,11 +40,13 @@ class CriteriaFileButtonLogic(ButtonLogic):
             self.label.setText(f"File: {os.path.basename(file_path)}")
 
 class GradeExamLogic:
-    def __init__(self, folder_label, criteria_label, score_label):
+    def __init__(self, folder_label, criteria_label, score_label, part_dict):
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
+        self.part_dict = part_dict
         self.exam_grader = None
+        self.individual_scores = {}
 
     def run(self):
         folder_path_display = self.folder_label.text().split(': ')[-1]
@@ -61,10 +63,16 @@ class GradeExamLogic:
             self.exam_grader.grade_exam()
             total_score = self.exam_grader.total_score
             
-            # Update the output text and score label
-            self.score_label.setText(f'Score: {round(total_score, 2)}')
-            self.criteria = self.exam_grader.criteria
-            self.exam_grader = self.exam_grader
+            # Update the individual scores and score label in the GUI
+            for part_number, part_info in self.part_dict.items():
+                result_field = part_info['result_field']
+                result_label = part_info['result_label']
+                score = int(result_field.text())
+                self.individual_scores[part_number] = score
+                result_label.setText(str(score))
+
+            total_score += sum(self.individual_scores.values())
+            self.score_label.setText(f'Total Score: {round(total_score, 2)}')
 
         except FileNotFoundError:
             error_message = f"Error: Please select an Exam Folder and Criteria File"
@@ -78,19 +86,22 @@ class GradeExamLogic:
         self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
 
 class ViewDetailsLogic:
-    def __init__(self, folder_label, criteria_label, score_label):
+    def __init__(self, folder_label, criteria_label, score_label, part_dict):
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
+        self.part_dict = part_dict
         self.exam_grader = None
+        self.individual_scores = {}
 
     def run(self):
-        folder_path = self.folder_label.text().split(': ')[-1]
+        folder_path_display = self.folder_label.text().split(': ')[-1]
+        folder_path = os.path.abspath(folder_path_display)
         criteria_file_path = self.criteria_label.text().split(': ')[-1]
-        print(criteria_file_path) 
+        print(criteria_file_path)  
         try:
             # Create an instance of the ExamGrader class
-            self.exam_grader = ExamGrader(folder_path, criteria_file_path)
+            self.exam_grader = ExamGrader(folder_path_display, criteria_file_path)
             # Load the criteria
             with open(criteria_file_path, 'r') as f:
                 self.criteria = json.load(f)
@@ -98,12 +109,17 @@ class ViewDetailsLogic:
             self.exam_grader.grade_exam()
             total_score = self.exam_grader.total_score
             
-            # Update the output text and score label
-            self.score_label.setText(f'Score: {round(total_score, 2)}')
-            self.criteria = self.exam_grader.criteria
-            self.exam_grader = self.exam_grader
+            # Update the individual scores and score label in the GUI
+            for part_number, part_info in self.part_dict.items():
+                result_field = part_info['result_field']
+                result_label = part_info['result_label']
+                score = int(result_field.text())
+                self.individual_scores[part_number] = score
+                result_label.setText(str(score))
 
-            results_dict = self.exam_grader.get_results_dict()
+            total_score += sum(self.individual_scores.values())
+            self.score_label.setText(f'Total Score: {round(total_score, 2)}')
+
             show_details_logic = ShowDetailsLogic(self.exam_grader)  # Pass the ExamGrader object to the constructor
             show_details_logic.run()
 
@@ -114,6 +130,9 @@ class ViewDetailsLogic:
         except Exception as e:
             error_message = f"Error: {str(e)}"
             QMessageBox.critical(None, "Error", error_message)
+
+        # Update the folder_label widget with the simplified path
+        self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
 
 class ShowDetailsLogic:
     def __init__(self, exam_grader):
@@ -267,17 +286,21 @@ class ShowDetailsLogic:
         # Show a message box to confirm that the results were saved
         QMessageBox.information(None, 'Save Results', f'The exam results have been saved to "{filename}".')
 
-
 class ResetLogic:
-    def __init__(self, folder_label, criteria_label, score_label):
+    def __init__(self, folder_label, criteria_label, score_label, part_dict):
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
+        self.part_dict = part_dict
 
     def run(self):
         self.folder_label.clear()
         self.criteria_label.clear()
         self.score_label.setText('Score: 0')
+        for part_number, part_info in self.part_dict.items():
+            part_info['result_field'].setText('0')
+            part_info['result_label'].setText('0')
+
 
 class QuitLogic:
     def __init__(self):
