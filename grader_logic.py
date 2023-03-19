@@ -2,9 +2,9 @@ import json
 import re, os
 
 class ExamGrader:
-    def __init__(self, exam_folder_path, criteria_file_path):
-        self.exam_folder_path = exam_folder_path
-        self.criteria_file_path = criteria_file_path
+    def __init__(self, folder_path, criteria_path):
+        self.exam_folder_path = folder_path
+        self.criteria_file_path = criteria_path
         self.criteria = {}
         self.results_dict = None
         self.total_score = 0

@@ -1,10 +1,9 @@
 import json, os, csv, sys
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QLabel
-from PyQt5.QtGui import QColor, QIcon
+from PyQt5.QtWidgets import QStyledItemDelegate, QFileDialog, QMessageBox, QApplication, QDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QLabel
+from PyQt5.QtGui import QColor, QIcon, QPen
 from PyQt5.QtCore import QSize, Qt
 from datetime import datetime
 from grader_logic import ExamGrader
-
 
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon('images/icon.png'))
@@ -12,6 +11,8 @@ app.setWindowIcon(QIcon('images/icon.png'))
 class ButtonLogic:
     def __init__(self, label):
         self.label = label
+        self.folder_path = ""
+        self.criteria_path = None
     def run(self):
         None
 
@@ -24,39 +25,47 @@ class FilesToCheckButtonLogic(ButtonLogic):
             None, "Select Exam Folder", options=options
         )
         if folder_path:
-            print(folder_path)
-            self.label.setText(f"Folder: {os.path.basename(folder_path)}")
+            self.folder_path = folder_path
+            folder_name = os.path.basename(folder_path)
+            files_in_folder = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+            content = f'<b>{folder_name}</b><br>'
+            content += ', '.join(files_in_folder)
+            self.label.setText(content)
+            self.label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
 class CriteriaFileButtonLogic(ButtonLogic):
     def run(self):
         super().run()
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
         file_path, _ = QFileDialog.getOpenFileName(
             None, "Select Criteria File", "", "JSON Files (*.json)", options=options
         )
         if file_path:
-            print(file_path)
-            self.label.setText(f"File: {os.path.basename(file_path)}")
+            self.criteria_path = file_path
+            self.label.setText(f"{os.path.basename(file_path)}")
+            self.label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
 class GradeExamLogic:
-    def __init__(self, folder_label, criteria_label, score_label, part_dict):
-        self.folder_label = folder_label
-        self.criteria_label = criteria_label
+    def __init__(self, folder_logic, criteria_logic, score_label, part_dict, main_window):
+        self.folder_logic = folder_logic
+        self.criteria_logic = criteria_logic
         self.score_label = score_label
         self.part_dict = part_dict
+        self.main_window = main_window
         self.exam_grader = None
         self.individual_scores = {}
 
     def run(self):
-        folder_path_display = self.folder_label.text().split(': ')[-1]
-        folder_path = os.path.abspath(folder_path_display)
-        criteria_file_path = self.criteria_label.text().split(': ')[-1]
+        
+        folder_path = self.folder_logic.folder_path
+        criteria_path = self.criteria_logic.text().split(': ')[-1]
+        print("GradeExamLogic folder_path:", folder_path)  # Add this line
+        print("GradeExamLogic criteria_file_path:", criteria_path)  # Add this line
         try:
             # Create an instance of the ExamGrader class
-            self.exam_grader = ExamGrader(folder_path_display, criteria_file_path)
+            self.exam_grader = ExamGrader(folder_path, criteria_path)
             # Load the criteria
-            with open(criteria_file_path, 'r') as f:
+            with open(criteria_path, 'r') as f:
                 self.criteria = json.load(f)
             # Grade the exam and get the total score
             self.exam_grader.grade_exam()
@@ -76,6 +85,9 @@ class GradeExamLogic:
 
             total_score += sum(self.individual_scores.values())
             self.score_label.setText(f'Score: {round(total_score, 2)}')
+
+            # Update the score box style
+            self.main_window.update_score_box_style(total_score)
 
         except FileNotFoundError:
             error_message = f"Error: Please select an Exam Folder and Criteria File"
@@ -85,26 +97,22 @@ class GradeExamLogic:
             error_message = f"Error: {str(e)}"
             QMessageBox.critical(None, "Error", error_message)
 
-        # Update the folder_label widget with the simplified path
-        self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
-
 class ViewDetailsLogic:
-    def __init__(self, folder_label, criteria_label, score_label, part_dict):
-        self.folder_label = folder_label
+    def __init__(self, folder_logic, criteria_label, score_label, part_dict, main_window):
+        self.folder_logic = folder_logic
         self.criteria_label = criteria_label
         self.score_label = score_label
         self.part_dict = part_dict
+        self.main_window = main_window
         self.exam_grader = None
         self.individual_scores = {}
 
     def run(self):
-        folder_path_display = self.folder_label.text().split(': ')[-1]
-        folder_path = os.path.abspath(folder_path_display)
+        folder_path = self.folder_logic.folder_path
         criteria_file_path = self.criteria_label.text().split(': ')[-1]
-        print(criteria_file_path)  
         try:
             # Create an instance of the ExamGrader class
-            self.exam_grader = ExamGrader(folder_path_display, criteria_file_path)
+            self.exam_grader = ExamGrader(folder_path, criteria_file_path)
             # Load the criteria
             with open(criteria_file_path, 'r') as f:
                 self.criteria = json.load(f)
@@ -126,8 +134,10 @@ class ViewDetailsLogic:
 
             total_score += sum(self.individual_scores.values())
             self.score_label.setText(f'Score: {round(total_score, 2)}')
-
-            show_details_logic = ShowDetailsLogic(self.exam_grader)  # Pass the ExamGrader object to the constructor
+            # Update the score box style
+            self.main_window.update_score_box_style(total_score)
+            
+            show_details_logic = ShowDetailsLogic(self.exam_grader, self.individual_scores, criteria_file_path)  # Pass the ExamGrader object to the constructor
             show_details_logic.run()
 
         except FileNotFoundError:
@@ -139,11 +149,13 @@ class ViewDetailsLogic:
             QMessageBox.critical(None, "Error", error_message)
 
         # Update the folder_label widget with the simplified path
-        self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
+        #self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
 
 class ShowDetailsLogic:
-    def __init__(self, exam_grader):
+    def __init__(self, exam_grader, individual_scores, criteria_file_path):
         self.results_dict = exam_grader.get_results_dict()
+        self.individual_scores = individual_scores
+        self.criteria_file_path = criteria_file_path
 
     def run(self):
         if self.results_dict is not None:
@@ -161,11 +173,12 @@ class ShowDetailsLogic:
 
             # Create a table to display the exam details
             table = QTableWidget()
+            table.setItemDelegate(CustomItemDelegate())
             table.setColumnCount(5)
             table.setHorizontalHeaderLabels(['Device', 'Question', 'Result', 'Score', 'Weight'])
 
-            # Read the criteria sections from the criteria.json file
-            with open('criteria.json') as f:
+            # Read the criteria sections from the criteria file
+            with open(self.criteria_file_path) as f:
                 criteria_dict = json.load(f)
             sections = {}
             for key, value in criteria_dict.items():
@@ -173,6 +186,29 @@ class ShowDetailsLogic:
                 if section not in sections:
                     sections[section] = []
                 sections[section].append(key)
+
+            # Add the manually entered scores to the total score
+            total_score = sum(self.individual_scores.values())
+
+            # Add the manually entered part scores to the table
+            part_rows = {}
+            for part_num, part_score in self.individual_scores.items():
+                if part_num != 2:  # Skip section 2 (Device Initialization)
+                    section_name = f'Section {part_num}'
+                    if section_name not in part_rows:
+                        part_rows[section_name] = []
+                    part_rows[section_name].append((part_num, part_score))
+
+            # Add the rows for Part 1
+            part_rows_list = part_rows.get('Section 1', [])
+            if part_rows_list:
+                table.insertRow(table.rowCount())
+                section_item = QTableWidgetItem(f'Section 1 Subnetting.     Score: {round(sum([row[1] for row in part_rows_list]), 2)}')
+                section_item.setFlags(Qt.NoItemFlags)
+                section_item.setBackground(QColor('lightgray'))
+                section_item.setForeground(QColor('black'))
+                table.setItem(table.rowCount() - 1, 0, section_item)
+                table.setSpan(table.rowCount() - 1, 0, 1, table.columnCount())
 
             # Group the rows by section
             section_rows = {}
@@ -192,8 +228,6 @@ class ShowDetailsLogic:
                     section_rows[section].append(row)
 
             # Add the exam details to the table by section
-            total_score = 0
-
             for section_name, section_keys in sections.items():
                 section_rows_list = []
                 section_total_score = 0
@@ -203,10 +237,10 @@ class ShowDetailsLogic:
                 if section_rows_list:
                     # Add the section name and total score row
                     table.insertRow(table.rowCount())
-                    section_item = QTableWidgetItem(f'{section_name} Section: {round(section_total_score, 2)} Points')
+                    section_item = QTableWidgetItem(f'Section {section_name}.     Score: {round(section_total_score, 2)}')
                     section_item.setFlags(Qt.NoItemFlags)
                     section_item.setBackground(QColor('lightgray'))
-                    section_item.setForeground(QColor('black')) # Change the section header text color to blue
+                    section_item.setForeground(QColor('black'))
                     table.setItem(table.rowCount() - 1, 0, section_item)
                     table.setSpan(table.rowCount() - 1, 0, 1, table.columnCount())
                     # Add the rows for this section
@@ -220,16 +254,33 @@ class ShowDetailsLogic:
                                     table.item(table.rowCount() - 1, j).setBackground(QColor('#90CAC7'))
                                 else:
                                     table.item(table.rowCount() - 1, j).setBackground(QColor('#B26D70'))
-                    total_score += section_total_score  # Add the section score to the total score
+                                
+                total_score += section_total_score # Add the section score to the total score
+            
+            # Add the rows for Part 4 and 5
+            for part_num in [4, 5]:
+                part_rows_list = part_rows.get(f'Section {part_num}', [])
+                section_name_list = ["Testing","Information"]
+                if part_rows_list:
+                    table.insertRow(table.rowCount())
+                    if part_num == 4:
+                        section_item = QTableWidgetItem(f'Section {part_num} {section_name_list[0]}.     Score: {round(sum([row[1] for row in part_rows_list]), 2)}')
+                    elif part_num == 5:
+                        section_item = QTableWidgetItem(f'Section {part_num} {section_name_list[1]}.     Score: {round(sum([row[1] for row in part_rows_list]), 2)}')
+                    section_item.setFlags(Qt.NoItemFlags)
+                    section_item.setBackground(QColor('lightgray'))
+                    section_item.setForeground(QColor('black'))
+                    table.setItem(table.rowCount() - 1, 0, section_item)
+                    table.setSpan(table.rowCount() - 1, 0, 1, table.columnCount())
 
             # Calculate pass/fail status
-            pass_threshold = 45.0
+            pass_threshold = 70.0
             pass_status = 'PASS' if total_score >= pass_threshold else 'FAIL'
             if pass_status == 'PASS':
-                total_score_label.setText(f'Total Score: {round(total_score, 2)} - Pass')
+                total_score_label.setText(f'Score: {round(total_score, 2)} - Pass')
                 total_score_groupbox.setStyleSheet('background-color: #90CAC7')
             else:
-                total_score_label.setText(f'Total Score: {round(total_score, 2)} - Fail')
+                total_score_label.setText(f'Score: {round(total_score, 2)} - Fail')
                 total_score_groupbox.setStyleSheet('background-color: #B26D70')
             
             # Add the total score label to the total score groupbox
@@ -313,7 +364,6 @@ class ResetLogic:
             part_info['result_field'].setText('0.0')
             part_info['result_label'].setText('0.0')
 
-
 class QuitLogic:
     def __init__(self):
         None
@@ -323,3 +373,16 @@ class QuitLogic:
                                        QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:
             QApplication.quit()
+
+class CustomItemDelegate(QStyledItemDelegate):
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+
+        # Check if the current index is a section header
+        if index.data() and index.data().startswith('Section') and index.column() == 0:
+            # Set the pen to white color with 2px width
+            pen = QPen(Qt.white, 2)
+            painter.setPen(pen)
+            # Draw a rectangle border around the section header cell
+            painter.drawRect(option.rect)

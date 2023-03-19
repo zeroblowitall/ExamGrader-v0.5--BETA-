@@ -7,6 +7,8 @@ class MyButton(QtWidgets.QPushButton):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setStyleSheet('color: #44474E; font-size: 25px; font-family: Calibri; font-weight: bold')
         self.label.setText(text)
+        self.setMinimumWidth(0)
+        self.setMaximumWidth(16777215)
 
         # Set the button style sheet with the default icon path
         self.setStyleSheet('''
