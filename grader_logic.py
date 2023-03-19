@@ -8,6 +8,7 @@ class ExamGrader:
         self.criteria = {}
         self.results_dict = None
         self.total_score = 0
+        self.section_scores = {}
         self.load_criteria()
 
     def load_criteria(self):
@@ -49,6 +50,10 @@ class ExamGrader:
                         points = self.criteria[key]['weight'] if self.criteria[key]['answer'].lower() not in exam_file_contents.lower() and key not in found_strings else 0
                         self.results_dict[exam_file][key] = {'answer': self.criteria[key]['answer'], 'weight': self.criteria[key]['weight'], 'points': points}
                         found_strings.add(key) if points != 0 else None
+                section = self.criteria[key]['section']
+                if section not in self.section_scores:
+                    self.section_scores[section] = 0
+                self.section_scores[section] += self.results_dict[exam_file][key]['points']
             self.total_score += sum([self.results_dict[exam_file][key]['points'] for key in self.results_dict[exam_file]])
 
     def get_results_dict(self):

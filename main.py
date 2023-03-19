@@ -1,7 +1,9 @@
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ResetLogic, QuitLogic,ViewDetailsLogic
+from button_logic import FilesToCheckButtonLogic, CriteriaFileButtonLogic, GradeExamLogic, ResetLogic, QuitLogic
 from custom_button import MyButton
+from functools import partial
+
 
 class ExamGraderGUI(QtWidgets.QWidget):
     def __init__(self):
@@ -94,6 +96,7 @@ class ExamGraderGUI(QtWidgets.QWidget):
         self.parts_area_layout = QtWidgets.QGridLayout(self.parts_area)
         self.part_dict = {}
         self.overall_score = 0
+        max_values = [10, 10, 60, 10, 10]
 
         # Set a fixed height for the QGroupBox
         self.parts_area.setFixedHeight(400)
@@ -125,13 +128,20 @@ class ExamGraderGUI(QtWidgets.QWidget):
             part_label.setStyleSheet('color: #B9BABD; font-size: 24px;')
             part_label.setFixedWidth(350)
             self.parts_area_layout.addWidget(part_label, i, 0)
-            #self.parts_area_layout.setColumnStretch(0, 0)
-            #self.parts_area_layout.setColumnStretch(1, 0)
-            #self.parts_area_layout.setColumnStretch(3, 0)
 
             enter_result = QtWidgets.QLineEdit(self.parts_area)
             enter_result.setFixedWidth(80)
             enter_result.setText('0.0')  # Set default value to 0
+
+            # Create a QDoubleValidator with the desired minimum, maximum, and decimal places
+            max_value = max_values[i]
+            print(max_values[i]) # Get the max value for the current QLineEdit from the list
+            validator = QtGui.QDoubleValidator(0, max_value, 1)  # Adjust min, max, and decimals as needed
+            enter_result.setValidator(validator)
+
+            # Connect the textChanged signal to the on_text_changed method
+            enter_result.editingFinished.connect(partial(self.on_editing_finished, max_value, enter_result))
+
             if part_number == 2:
                 enter_result.setVisible(False)  # Hide input field for part 2/3
             elif part_number == 3:
@@ -155,6 +165,19 @@ class ExamGraderGUI(QtWidgets.QWidget):
 
         self.parts_area.setLayout(self.parts_area_layout)
         self.parts_area.setStyleSheet('QGroupBox{border: 2px solid #383C43; border-radius: 40px; padding: 5px;background-color: #383C43;}')
+
+    def on_editing_finished(self, max_value, line_edit):
+        try:
+            text = line_edit.text()
+            value = float(text)
+            if value > max_value:
+                line_edit.setText(str(max_value))
+                QtWidgets.QMessageBox.warning(None, "Value Exceeded", f"The maximum allowed value is {max_value}. The value has been set to the maximum.")
+            else:
+                line_edit.setText(f'{value:.1f}')  # Display the value as a float with 1 decimal place
+        except ValueError:
+            pass
+
 
     def setup_score_box(self):
         # Create the Score box
@@ -230,7 +253,7 @@ class ExamGraderGUI(QtWidgets.QWidget):
         self.folder_logic = FilesToCheckButtonLogic(self.folder_path_label)
         self.browse_file_logic = CriteriaFileButtonLogic(self.criteria_label)
         self.grade_exam_logic = GradeExamLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self)
-        self.details_button_logic = ViewDetailsLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self)
+        self.details_button_logic = GradeExamLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self, show_details=True)
         self.reset_logic = ResetLogic(self.folder_path_label, self.criteria_label, self.score_label, self.part_dict)
         self.quit_logic = QuitLogic()
         #Connect the button signals to their slots

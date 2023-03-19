@@ -46,7 +46,7 @@ class CriteriaFileButtonLogic(ButtonLogic):
             self.label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 
 class GradeExamLogic:
-    def __init__(self, folder_logic, criteria_logic, score_label, part_dict, main_window):
+    def __init__(self, folder_logic, criteria_logic, score_label, part_dict, main_window, show_details=False):
         self.folder_logic = folder_logic
         self.criteria_logic = criteria_logic
         self.score_label = score_label
@@ -54,40 +54,41 @@ class GradeExamLogic:
         self.main_window = main_window
         self.exam_grader = None
         self.individual_scores = {}
+        self.show_details = show_details
 
     def run(self):
-        
         folder_path = self.folder_logic.folder_path
-        criteria_path = self.criteria_logic.text().split(': ')[-1]
-        print("GradeExamLogic folder_path:", folder_path)  # Add this line
-        print("GradeExamLogic criteria_file_path:", criteria_path)  # Add this line
+        criteria_path = self.criteria_logic.text().split(': ')[-1] if not self.show_details else self.criteria_logic.text().split(': ')[-1]
         try:
-            # Create an instance of the ExamGrader class
             self.exam_grader = ExamGrader(folder_path, criteria_path)
-            # Load the criteria
             with open(criteria_path, 'r') as f:
                 self.criteria = json.load(f)
-            # Grade the exam and get the total score
             self.exam_grader.grade_exam()
             total_score = self.exam_grader.total_score
-            
-            # Update the individual scores and score label in the GUI
+            section_scores = self.exam_grader.section_scores
+
+            # Calculate the total score for part_number 3
+            part_3_score = sum([score for section, score in section_scores.items() if section.startswith('3')])
+
             for part_number, part_info in self.part_dict.items():
                 result_field = part_info['result_field']
                 result_label = part_info['result_label']
-                score = float(result_field.text())
-                self.individual_scores[part_number] = score
                 if part_number == 2:
-                    # Update the score label for Part 2/3
-                    result_label.setText(str(round(total_score, 2)))
+                    result_label.setText(str(round(section_scores["2: Device Initialisation"], 2)))
+                elif part_number == 3:
+                    result_label.setText(str(round(part_3_score, 2)))  # Update this line
                 else:
+                    score = float(result_field.text())
+                    self.individual_scores[part_number] = score
                     result_label.setText(str(round(score, 2)))
 
             total_score += sum(self.individual_scores.values())
             self.score_label.setText(f'Score: {round(total_score, 2)}')
-
-            # Update the score box style
             self.main_window.update_score_box_style(total_score)
+
+            if self.show_details:
+                show_details_logic = ShowDetailsLogic(self.exam_grader, self.individual_scores, criteria_path)
+                show_details_logic.run()
 
         except FileNotFoundError:
             error_message = f"Error: Please select an Exam Folder and Criteria File"
@@ -96,60 +97,6 @@ class GradeExamLogic:
         except Exception as e:
             error_message = f"Error: {str(e)}"
             QMessageBox.critical(None, "Error", error_message)
-
-class ViewDetailsLogic:
-    def __init__(self, folder_logic, criteria_label, score_label, part_dict, main_window):
-        self.folder_logic = folder_logic
-        self.criteria_label = criteria_label
-        self.score_label = score_label
-        self.part_dict = part_dict
-        self.main_window = main_window
-        self.exam_grader = None
-        self.individual_scores = {}
-
-    def run(self):
-        folder_path = self.folder_logic.folder_path
-        criteria_file_path = self.criteria_label.text().split(': ')[-1]
-        try:
-            # Create an instance of the ExamGrader class
-            self.exam_grader = ExamGrader(folder_path, criteria_file_path)
-            # Load the criteria
-            with open(criteria_file_path, 'r') as f:
-                self.criteria = json.load(f)
-            # Grade the exam and get the total score
-            self.exam_grader.grade_exam()
-            total_score = self.exam_grader.total_score
-            
-            # Update the individual scores and score label in the GUI
-            for part_number, part_info in self.part_dict.items():
-                result_field = part_info['result_field']
-                result_label = part_info['result_label']
-                score = float(result_field.text())
-                self.individual_scores[part_number] = score
-                if part_number == 2:
-                    # Update the score label for Part 2/3
-                    result_label.setText(str(round(total_score, 2)))
-                else:
-                    result_label.setText(str(round(score, 2)))
-
-            total_score += sum(self.individual_scores.values())
-            self.score_label.setText(f'Score: {round(total_score, 2)}')
-            # Update the score box style
-            self.main_window.update_score_box_style(total_score)
-            
-            show_details_logic = ShowDetailsLogic(self.exam_grader, self.individual_scores, criteria_file_path)  # Pass the ExamGrader object to the constructor
-            show_details_logic.run()
-
-        except FileNotFoundError:
-            error_message = f"Error: Please select an Exam Folder and Criteria File"
-            QMessageBox.critical(None, "Error", error_message)
-
-        except Exception as e:
-            error_message = f"Error: {str(e)}"
-            QMessageBox.critical(None, "Error", error_message)
-
-        # Update the folder_label widget with the simplified path
-        #self.folder_label.setText(f"Folder: {os.path.basename(folder_path_display)}")
 
 class ShowDetailsLogic:
     def __init__(self, exam_grader, individual_scores, criteria_file_path):

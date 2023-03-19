@@ -38,6 +38,9 @@ class MyButton(QtWidgets.QPushButton):
         # Connect the button events to their respective slots
         self.installEventFilter(self)
 
+        # Change the cursor shape to a pointing hand
+        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.Enter:
             self.setStyleSheet('''
