@@ -1,0 +1,134 @@
+Current configuration : 1738 bytes
+!
+version 15.2
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname S1
+!
+boot-start-marker
+boot-end-marker
+!
+enable secret 5 $1$U.Gu$rthhg.cuhJEl8OG614qNh/
+!
+username admin secret 5 $1$c0St$WJhIQdKvG3VLq/6rqysLE.
+no aaa new-model
+system mtu routing 1500
+!
+!
+no ip domain lookup
+ip domain-name ccna-lab.com
+!
+!
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+!
+vlan internal allocation policy ascending
+!
+!
+interface FastEthernet0/1
+ shutdown
+!
+interface FastEthernet0/2
+ shutdown
+!
+interface FastEthernet0/3
+ shutdown
+!
+interface FastEthernet0/4
+ shutdown
+!
+interface FastEthernet0/5
+!
+interface FastEthernet0/6
+!
+interface FastEthernet0/7
+ shutdown
+!
+interface FastEthernet0/8
+ shutdown
+!
+interface FastEthernet0/9
+ shutdown
+!
+interface FastEthernet0/10
+ shutdown
+!
+interface FastEthernet0/11
+ shutdown
+!
+interface FastEthernet0/12
+ shutdown
+!
+interface FastEthernet0/13
+ shutdown
+!
+interface FastEthernet0/14
+ shutdown
+!
+interface FastEthernet0/15
+ shutdown
+!
+interface FastEthernet0/16
+ shutdown
+!
+interface FastEthernet0/17
+ shutdown
+!
+interface FastEthernet0/18
+ shutdown
+!
+interface FastEthernet0/19
+ shutdown
+!
+interface FastEthernet0/20
+ shutdown
+!
+interface FastEthernet0/21
+ shutdown
+!
+interface FastEthernet0/22
+ shutdown
+!
+interface FastEthernet0/23
+ shutdown
+!
+interface FastEthernet0/24
+ shutdown
+!
+interface GigabitEthernet0/1
+ shutdown
+!
+interface GigabitEthernet0/2
+ shutdown
+!
+interface Vlan1
+ description Connection to R1
+ ip address 192.168.10.2 255.255.255.128
+! ip address 172.16.1.2 255.255.255.192
+! ip address 209.165.2201.2 255.255.255.240
+ ipv6 address FE80::2 link-local
+ ipv6 address 2001:DB8:ACAD:A::2/64
+!
+ip default-gateway 192.168.10.1
+! ip default-gateway 172.16.1.1
+! ip default-gateway 209.165.201.1
+ip http server
+ip http secure-server
+!
+!
+banner motd ^C Authorized Users Only! ^C
+!
+line con 0
+ password 7 094F471A1A0A141D051C053938
+ login
+line vty 0 4
+ login local
+ transport input ssh
+line vty 5 15
+ login
+!
+end

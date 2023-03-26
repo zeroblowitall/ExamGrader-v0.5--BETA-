@@ -1,5 +1,5 @@
 {
-    "Device Initialised R1": {"answer": "no ip[- ]routing", "weight": 5.0, "regex": true, "device": "router", "existence":"not present", "section":"2: Device Initialisation"},
+    "Device Initialised R1": {"answer": "no ip[- ]routing", "weight": 5.0, "regex": true, "device": "router", "existence":"not present", "section":"2 Device Initialisation"},
     
     "No Domain Lookup R1": {"answer": "no ip domain[- ]lookup", "weight": 1.0, "regex": true, "device": "router", "existence":"present", "section":"3 Router"},
     "Hostname R1": {"answer": "hostname R1", "weight": 1.0, "regex": false, "device": "router", "existence":"present", "section":"3 Router"},
@@ -29,7 +29,7 @@
     "Int G0/1 IPv6 LL R1": {"answer": "(?<=interface GigabitEthernet0/1\\s)(?:.|\\n)*?ipv6 address fe80::1 link-local(?:.|\\n)*?(?=interface Serial0/0/0)","weight": 1.0,"regex": true,"device": "router", "existence":"present", "section":"3 Router"},
     "Int G0/1 no shutdown R1": {"answer": "(?<=interface GigabitEthernet0/1\\s)(?:.|\\n)*?shutdown(?:.|\\n)*?(?=interface Serial0/0/0)","weight": 1.0,"regex": true,"device": "router", "existence":"not present", "section":"3 Router"},
     
-    "Device Initialised S1": {"answer": "switchport mode access", "weight": 5.0, "regex": false, "device": "switch", "existence":"not present", "section":"2: Device Initialisation"},
+    "Device Initialised S1": {"answer": "switchport mode access", "weight": 5.0, "regex": false, "device": "switch", "existence":"not present", "section":"2 Device Initialisation"},
     
     "No Domain Lookup S1": {"answer": "no ip domain[- ]lookup", "weight": 1.0, "regex": true, "device": "switch", "existence":"present", "section":"3 Switch"},
     "Hostname S1": {"answer": "hostname S1", "weight": 1.0, "regex": false, "device": "switch", "existence":"present", "section":"3 Switch"},

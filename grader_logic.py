@@ -10,19 +10,15 @@ class ExamGrader:
         self.total_score = 0
         self.section_scores = {}
         self.load_criteria()
-
     def load_criteria(self):
         with open(self.criteria_file_path, 'r') as f:
             self.criteria = json.load(f)
-
     def grade_exam(self):
         exam_files = [f for f in os.listdir(self.exam_folder_path) if f.endswith('.txt')]
-
         self.results_dict = {}
         for exam_file in exam_files:
             with open(os.path.join(self.exam_folder_path, exam_file), 'r') as f:
                 exam_file_contents = f.read()
-
             self.results_dict[exam_file] = {}
             found_strings = set()
             for key in self.criteria.keys():
@@ -55,6 +51,5 @@ class ExamGrader:
                     self.section_scores[section] = 0
                 self.section_scores[section] += self.results_dict[exam_file][key]['points']
             self.total_score += sum([self.results_dict[exam_file][key]['points'] for key in self.results_dict[exam_file]])
-
     def get_results_dict(self):
         return self.results_dict

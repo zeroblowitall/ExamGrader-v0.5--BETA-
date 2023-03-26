@@ -1,0 +1,97 @@
+Current configuration : 1886 bytes
+!
+version 16.9
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+!
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+ip ssh version 2.0
+security passwords min-length 10
+enable secret 5 $1$yGHM$66xB65wmY88oAcQb9H8Z6.
+!
+no aaa new-model
+!
+no ip domain lookup
+ip domain name ccna-lab.com
+!
+!
+login on-success log
+!
+!
+subscriber templating
+!
+!
+multilink bundle-name authenticated
+!
+spanning-tree extend system-id
+!
+username admin secret 5 $1$C/rP$aqfa3Im1nqdYk2jQat6M7.
+!
+redundancy
+ mode none
+!
+interface Loopback0
+ description Loopback interface
+ ip address 10.52.0.1 255.255.255.248
+ ip ospf network point-to-point
+!
+interface GigabitEthernet0/0/0
+ description Connected to R2 G0/0/0
+ ip address 10.67.254.2 255.255.255.252
+ ip nat outside
+ ip ospf hello-interval 30
+ negotiation auto
+!
+interface GigabitEthernet0/0/1
+ description Connected to S1 f0/5
+ ip address 192.168.1.1 255.255.255.0
+ ip nat inside
+ negotiation auto
+!
+interface Serial0/1/0
+ no ip address
+!
+interface Serial0/1/1
+ no ip address
+!
+router ospf 1
+ router-id 0.0.0.1
+ auto-cost reference-bandwidth 1000
+ passive-interface GigabitEthernet0/0/1
+ passive-interface Loopback0
+ network 10.52.0.0 0.0.0.7 area 0
+ network 10.67.254.0 0.0.0.3 area 0
+!
+ip forward-protocol nd
+no ip http server
+ip http secure-server
+ip nat inside source list 10 interface G0/0/1 overload
+!
+!
+access-list 1 permit 192.168.1.0 0.0.0.255
+!
+!
+control-plane
+!
+banner motd ^C Authorized Users Only! ^C
+!
+line con 0
+ password 7 094F471A1A0A141D051C053938
+ login
+ transport input none
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ login local
+ transport input ssh
+!
+end

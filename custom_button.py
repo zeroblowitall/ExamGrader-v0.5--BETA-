@@ -9,7 +9,6 @@ class MyButton(QtWidgets.QPushButton):
         self.label.setText(text)
         self.setMinimumWidth(0)
         self.setMaximumWidth(16777215)
-
         # Set the button style sheet with the default icon path
         self.setStyleSheet('''
             QPushButton {
@@ -19,28 +18,22 @@ class MyButton(QtWidgets.QPushButton):
                 background-position: center;
             }
         ''' % icon_path)
-
         # Set the icon paths as attributes for later use
         self.icon_path = icon_path
         self.hover_path = hover_path
         self.pressed_path = pressed_path
         self.released_path = released_path
-
         # Set the size of the button to match the size of the background image
         pixmap = QtGui.QPixmap(icon_path)
         self.setFixedSize(pixmap.size())
-
         # Set the size of the label and position it in the center of the button
         label_size = self.label.sizeHint()
         self.label.resize(label_size)
         self.label.move(self.rect().center() - self.label.rect().center())
-
         # Connect the button events to their respective slots
         self.installEventFilter(self)
-
         # Change the cursor shape to a pointing hand
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.Enter:
             self.setStyleSheet('''
@@ -78,6 +71,4 @@ class MyButton(QtWidgets.QPushButton):
                     background-position: center;
                 }
             ''' % self.released_path)
-
         return super().eventFilter(obj, event)
-
