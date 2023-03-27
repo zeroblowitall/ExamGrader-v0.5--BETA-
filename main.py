@@ -8,6 +8,7 @@ from exam_sections import update_parts_area
 class ExamGraderGUI(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.exam_type = "ITN"
         self.init_ui()
         self.criteria = {}
         self.exam_grader = None
@@ -41,16 +42,26 @@ class ExamGraderGUI(QtWidgets.QWidget):
         self.menu_area = QtWidgets.QVBoxLayout()
         self.menu_area.setSpacing(0)
         self.menu_area.setContentsMargins(0, 0, 0, 0)
-        self.ITN_button = MyButton('ITN', 'images/bigwhitebuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhitepressedbuttonSq.png', 'images/bigwhitehoverbuttonSq.png', self)
-        self.SRWE_button = MyButton('SRWE', 'images/bigwhitebuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhitepressedbuttonSq.png', 'images/bigwhitehoverbuttonSq.png', self)
-        self.ENSA_button = MyButton('ENSA', 'images/bigwhitebuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhitepressedbuttonSq.png', 'images/bigwhitehoverbuttonSq.png', self)
+        self.ITN_button = MyButton('ITN', 'images/bigwhitebuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhitepressedbuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhiteselectedbuttonSq.png', self)
+        self.SRWE_button = MyButton('SRWE', 'images/bigwhitebuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhitepressedbuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhiteselectedbuttonSq.png', self)
+        self.ENSA_button = MyButton('ENSA', 'images/bigwhitebuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhitepressedbuttonSq.png', 'images/bigwhitehoverbuttonSq.png', 'images/bigwhiteselectedbuttonSq.png', self)
         self.menu_area.addWidget(self.ITN_button)
         self.menu_area.addWidget(self.SRWE_button)
         self.menu_area.addWidget(self.ENSA_button)
-        self.ITN_button.clicked.connect(lambda: update_parts_area("ITN", self))
-        self.SRWE_button.clicked.connect(lambda: update_parts_area("SRWE", self))
-        self.ENSA_button.clicked.connect(lambda: update_parts_area("ENSA", self))
+        self.ITN_button.clicked.connect(lambda: self.set_exam_type_and_update_parts_area("ITN"))
+        self.SRWE_button.clicked.connect(lambda: self.set_exam_type_and_update_parts_area("SRWE"))
+        self.ENSA_button.clicked.connect(lambda: self.set_exam_type_and_update_parts_area("ENSA"))
         self.menu_area.addStretch(1)
+    def set_exam_type_and_update_parts_area(self, exam_type):
+        self.exam_type = exam_type
+        self.grade_exam_logic.update_exam_type(exam_type)
+        update_parts_area(exam_type, self)
+        # Highlight the appropriate button
+        self.ITN_button.set_highlighted(self.exam_type == "ITN")
+        self.SRWE_button.set_highlighted(self.exam_type == "SRWE")
+        self.ENSA_button.set_highlighted(self.exam_type == "ENSA")
+        self.details_button_logic.update_exam_type(exam_type)
+        self.grade_exam_logic.part_dict = self.part_dict
     def setup_banner_label(self): # Create the banner label
         self.banner_label = QtWidgets.QLabel(self)
         self.banner_label.setPixmap(QtGui.QPixmap('images/banner.png'))
@@ -76,11 +87,9 @@ class ExamGraderGUI(QtWidgets.QWidget):
         self.browse_button_layout.addLayout(self.folder_box, 1, 1)
         self.browse_button_layout.addWidget(self.browse_file_button, 2, 0)
         self.browse_button_layout.addLayout(self.criteria_box, 2, 1)
-    def on_editing_finished(self, max_value, result_field):
+    def on_editing_finished(self, result_field):
         result = float(result_field.text())
-        if result > max_value:
-            result = max_value
-            result_field.setText(f'{result:.1f}')
+        result_field.setText(f'{result:.1f}')
         part_number = None
         for key, part_info in self.part_dict.items():
             if part_info['result_field'] == result_field:
@@ -88,7 +97,6 @@ class ExamGraderGUI(QtWidgets.QWidget):
                 break
         if part_number is not None:
             self.part_dict[part_number]['result_label'].setText(f'{result:.1f}')
-            #self.update_overall_score()
     def setup_score_box(self): # Create the Score box
         self.score_label = QtWidgets.QLabel('Score: 0.0', self)
         self.score_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -137,9 +145,9 @@ class ExamGraderGUI(QtWidgets.QWidget):
         # Create the button logic instances
         self.folder_logic = FilesToCheckButtonLogic(self.folder_path_label)
         self.browse_file_logic = CriteriaFileButtonLogic(self.criteria_label)
-        self.grade_exam_logic = GradeExamLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self)
-        self.details_button_logic = GradeExamLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self, show_details=True)
-        self.reset_logic = ResetLogic(self.folder_path_label, self.criteria_label, self.score_label, self.part_dict)
+        self.grade_exam_logic = GradeExamLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self, self.exam_type, self)
+        self.details_button_logic = GradeExamLogic(self.folder_logic, self.criteria_label, self.score_label, self.part_dict, self, self.exam_type, self, show_details=True)
+        self.reset_logic = ResetLogic(self.folder_path_label, self.criteria_label, self.score_label, self.part_dict, self.folder_logic, self.browse_file_logic, self.grade_exam_logic, self)
         self.quit_logic = QuitLogic()
         #Connect the button signals to their slots
         self.browse_folder_button.clicked.connect(self.folder_logic.run)

@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets
 from functools import partial
 
 def update_parts_area(exam_type, gui_ref):
@@ -7,11 +7,7 @@ def update_parts_area(exam_type, gui_ref):
         gui_ref.parts_area_layout.itemAt(i).widget().setParent(None)
     gui_ref.part_dict = {}
     gui_ref.overall_score = 0
-    max_values = {
-        "ITN": [10, 10, 60, 10, 10],
-        "SRWE": [45, 30, 20, 5, 5],
-        "ENSA": [45, 30, 20, 5, 5],
-    }
+    
     sections = {
         "ITN": [
             "Subnetting",
@@ -25,7 +21,6 @@ def update_parts_area(exam_type, gui_ref):
             "VLANs, Trunks, Eth.",
             "Routing, DHCP",
             "Testing",
-            "N/A",
         ],
         "ENSA": [
             "Initialise, Config",
@@ -38,7 +33,7 @@ def update_parts_area(exam_type, gui_ref):
     num_sections = len(sections[exam_type])
     manual_input_sections = {
         "ITN": [True, False, False, True, True],
-        "SRWE": [False, False, False, True, False],
+        "SRWE": [False, False, False, True],
         "ENSA": [False, False, False, False, True],
     }
     for i in range(num_sections):
@@ -57,12 +52,8 @@ def update_parts_area(exam_type, gui_ref):
         enter_result = QtWidgets.QLineEdit(gui_ref.parts_area)
         enter_result.setFixedWidth(80)
         enter_result.setText('0.0') 
-        # Create a QDoubleValidator with the desired minimum, maximum, and decimal places
-        max_value = max_values[exam_type][i]  # Change this line
-        validator = QtGui.QDoubleValidator(0, max_value, 1)  # Adjust min, max, and decimals as needed
-        enter_result.setValidator(validator)
         # Connect the textChanged signal to the on_text_changed method
-        enter_result.editingFinished.connect(partial(gui_ref.on_editing_finished, max_value, enter_result))
+        enter_result.editingFinished.connect(partial(gui_ref.on_editing_finished, enter_result))
         # Set the visibility based on the exam type and current section
         enter_result.setVisible(manual_input_sections[exam_type][i])
         gui_ref.parts_area_layout.addWidget(enter_result, i, 1)

@@ -51,5 +51,6 @@ class ExamGrader:
                     self.section_scores[section] = 0
                 self.section_scores[section] += self.results_dict[exam_file][key]['points']
             self.total_score += sum([self.results_dict[exam_file][key]['points'] for key in self.results_dict[exam_file]])
+
     def get_results_dict(self):
         return self.results_dict

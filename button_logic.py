@@ -2,6 +2,7 @@ import os, sys
 from PyQt5.QtWidgets import QStyledItemDelegate, QFileDialog, QMessageBox, QApplication
 from PyQt5.QtGui import QIcon, QPen
 from PyQt5.QtCore import Qt
+import exam_sections
 app = QApplication(sys.argv)
 app.setWindowIcon(QIcon('images/icon.png'))
 class ButtonLogic:
@@ -39,11 +40,15 @@ class CriteriaFileButtonLogic(ButtonLogic):
             self.label.setText(f"{os.path.basename(file_path)}")
             self.label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
 class ResetLogic:
-    def __init__(self, folder_label, criteria_label, score_label, part_dict):
+    def __init__(self, folder_label, criteria_label, score_label, part_dict, folder_logic, criteria_file_logic, grade_exam_logic, exam_grader_gui):
         self.folder_label = folder_label
         self.criteria_label = criteria_label
         self.score_label = score_label
         self.part_dict = part_dict
+        self.folder_logic = folder_logic
+        self.criteria_file_logic = criteria_file_logic
+        self.grade_exam_logic = grade_exam_logic
+        self.exam_grader_gui = exam_grader_gui
 
     def run(self):
         self.folder_label.clear()
@@ -52,6 +57,10 @@ class ResetLogic:
         for part_number, part_info in self.part_dict.items():
             part_info['result_field'].setText('0.0')
             part_info['result_label'].setText('0.0')
+        self.folder_logic.folder_path = ''
+        self.criteria_file_logic.criteria_path = ''
+        self.grade_exam_logic.exam_grader = None
+        self.exam_grader_gui.set_exam_type_and_update_parts_area("ITN")
 class QuitLogic:
     def __init__(self):
         None

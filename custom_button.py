@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 class MyButton(QtWidgets.QPushButton):
-    def __init__(self, text, icon_path, hover_path, pressed_path, released_path, parent=None):
+    def __init__(self, text, icon_path, hover_path, pressed_path, released_path, highlighted_path, parent=None):
         super().__init__(parent)
         self.label = QtWidgets.QLabel(self)
         self.label.setAlignment(QtCore.Qt.AlignCenter)
@@ -23,6 +23,8 @@ class MyButton(QtWidgets.QPushButton):
         self.hover_path = hover_path
         self.pressed_path = pressed_path
         self.released_path = released_path
+        self.highlighted_path = highlighted_path
+        self.is_highlighted = False
         # Set the size of the button to match the size of the background image
         pixmap = QtGui.QPixmap(icon_path)
         self.setFixedSize(pixmap.size())
@@ -35,7 +37,47 @@ class MyButton(QtWidgets.QPushButton):
         # Change the cursor shape to a pointing hand
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
     def eventFilter(self, obj, event):
-        if event.type() == QtCore.QEvent.Enter:
+        if not self.is_highlighted:
+            if event.type() == QtCore.QEvent.Enter:
+                self.setStyleSheet('''
+                    QPushButton {
+                        border: none;
+                        background-image: url(%s);
+                        background-repeat: no-repeat;
+                        background-position: center;
+                    }
+                ''' % self.hover_path)
+            elif event.type() == QtCore.QEvent.Leave:
+                self.setStyleSheet('''
+                    QPushButton {
+                        border: none;
+                        background-image: url(%s);
+                        background-repeat: no-repeat;
+                        background-position: center;
+                    }
+                ''' % self.icon_path)
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                self.setStyleSheet('''
+                    QPushButton {
+                        border: none;
+                        background-image: url(%s);
+                        background-repeat: no-repeat;
+                        background-position: center;
+                    }
+                ''' % self.pressed_path)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self.setStyleSheet('''
+                    QPushButton {
+                        border: none;
+                        background-image: url(%s);
+                        background-repeat: no-repeat;
+                        background-position: center;
+                    }
+                ''' % self.released_path)
+        return super().eventFilter(obj, event)
+    def set_highlighted(self, highlighted):
+        self.is_highlighted = highlighted
+        if highlighted:
             self.setStyleSheet('''
                 QPushButton {
                     border: none;
@@ -43,8 +85,8 @@ class MyButton(QtWidgets.QPushButton):
                     background-repeat: no-repeat;
                     background-position: center;
                 }
-            ''' % self.hover_path)
-        elif event.type() == QtCore.QEvent.Leave:
+            ''' % self.highlighted_path)
+        else:
             self.setStyleSheet('''
                 QPushButton {
                     border: none;
@@ -53,22 +95,3 @@ class MyButton(QtWidgets.QPushButton):
                     background-position: center;
                 }
             ''' % self.icon_path)
-        elif event.type() == QtCore.QEvent.MouseButtonPress:
-            self.setStyleSheet('''
-                QPushButton {
-                    border: none;
-                    background-image: url(%s);
-                    background-repeat: no-repeat;
-                    background-position: center;
-                }
-            ''' % self.pressed_path)
-        elif event.type() == QtCore.QEvent.MouseButtonRelease:
-            self.setStyleSheet('''
-                QPushButton {
-                    border: none;
-                    background-image: url(%s);
-                    background-repeat: no-repeat;
-                    background-position: center;
-                }
-            ''' % self.released_path)
-        return super().eventFilter(obj, event)
